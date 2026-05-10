@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="referrer" content="no-referrer">
+<title>Cockpit &middot; thegridbase</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='6' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='6' y='18' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='18' width='8' height='8' fill='%23f2f2f0'/></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#0a0a0a;
+  --fg:#f2f2f0;
+  --muted:rgba(242,242,240,0.45);
+  --muted-soft:rgba(242,242,240,0.22);
+  --border:rgba(255,255,255,0.08);
+  --border-strong:rgba(255,255,255,0.18);
+  --ok:#7cf5b6;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;width:100%}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;-webkit-user-select:none;
+  overflow:hidden;
+  position:relative;
+}
+body::before{
+  content:"";position:fixed;inset:0;
+  background-image:radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size:32px 32px;pointer-events:none;
+  mask-image:radial-gradient(ellipse 70% 60% at 50% 35%, #000 30%, transparent 95%);
+  z-index:0;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-align:left}
+
+main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;padding:0 64px}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:24px 0 22px;border-bottom:1px solid var(--border)}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.brand-block{display:grid;grid-template-columns:repeat(2,18px);grid-template-rows:repeat(2,18px);gap:1px;width:37px;height:37px}
+.brand-block i{background:var(--fg);display:block}
+.brand-text{font-family:var(--font-mono);font-size:11px;letter-spacing:0.32em;text-transform:uppercase;color:var(--fg)}
+.brand-text small{display:block;color:var(--muted);margin-top:5px;letter-spacing:0.28em}
+.topbar-right{display:flex;align-items:center;gap:24px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted)}
+.status{display:flex;align-items:center;gap:9px}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#7cf5b6;box-shadow:0 0 8px rgba(124,245,182,0.6)}
+.clock{color:var(--fg);font-variant-numeric:tabular-nums;font-size:13px;letter-spacing:0.12em}
+
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 13px;border:1px solid var(--border);border-radius:999px;
+  font-family:var(--font-mono);font-size:9px;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted);
+  cursor:pointer;transition:border-color 200ms ease, color 200ms ease, background 200ms ease;
+}
+.pill:hover{border-color:var(--border-strong);color:var(--fg)}
+.pill[data-on="1"]{border-color:rgba(124,245,182,0.4);color:var(--ok)}
+.pill-dot{width:5px;height:5px;border-radius:50%;background:var(--muted-soft)}
+.pill[data-on="1"] .pill-dot{background:var(--ok);box-shadow:0 0 6px rgba(124,245,182,0.6)}
+.pill svg{width:12px;height:12px;display:block}
+
+.hero{padding:42px 0 32px;display:grid;grid-template-columns:1.2fr 1fr;gap:48px;border-bottom:1px solid var(--border)}
+.hero-headline{font-family:var(--font-display);font-weight:700;letter-spacing:-0.04em;line-height:0.88;font-size:clamp(64px,8vw,116px);display:flex;flex-direction:column;color:var(--fg)}
+.hero-headline span{display:block}
+.hero-headline em{font-style:normal;font-weight:300;color:var(--muted)}
+.hero-meta{display:flex;flex-direction:column;justify-content:flex-end;gap:16px;padding-bottom:6px}
+.hero-meta-row{display:flex;align-items:center;gap:14px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--muted)}
+.hero-meta-row::before{content:"";display:block;width:24px;height:1px;background:var(--border-strong)}
+.hero-meta-desc{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--muted);max-width:420px;letter-spacing:0.005em}
+
+.section-head{display:flex;align-items:baseline;justify-content:space-between;padding:20px 0 12px}
+.section-tag{font-family:var(--font-mono);font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:14px}
+.section-tag::before{content:"";width:24px;height:1px;background:var(--border-strong)}
+.section-count{font-family:var(--font-mono);font-size:10px;letter-spacing:0.3em;color:var(--muted-soft);text-transform:uppercase}
+
+.primary-row{display:block;width:100%;padding:20px 0 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;transition:background 200ms ease;cursor:pointer}
+.primary-row:hover{background:rgba(255,255,255,0.02)}
+.primary-row:active{background:rgba(255,255,255,0.05)}
+.primary-grid{display:grid;grid-template-columns:60px 1fr auto auto;align-items:center;gap:28px}
+.primary-num{font-family:var(--font-mono);font-size:11px;letter-spacing:0.2em;color:var(--muted)}
+.primary-title{font-family:var(--font-display);font-weight:700;font-size:clamp(34px,4vw,58px);letter-spacing:-0.03em;line-height:0.95;color:var(--fg);transition:letter-spacing 400ms ease}
+.primary-row:hover .primary-title{letter-spacing:-0.01em}
+.primary-tag{font-family:var(--font-mono);font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--muted)}
+.primary-arrow{color:var(--fg);transition:transform 300ms ease;flex-shrink:0}
+.primary-row:hover .primary-arrow{transform:translate(4px,-4px)}
+.primary-arrow svg{width:32px;height:32px;display:block}
+
+.streaming{flex:1;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--border)}
+.app{position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:22px 22px 20px;border-right:1px solid var(--border);cursor:pointer;overflow:hidden;transition:background 200ms ease}
+.app:last-child{border-right:none}
+.app:hover{background:rgba(255,255,255,0.025)}
+.app:active{background:rgba(255,255,255,0.06)}
+.app-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.app-num{font-family:var(--font-mono);font-size:10px;letter-spacing:0.3em;color:var(--muted)}
+.app-title{font-family:var(--font-display);font-weight:600;font-size:clamp(26px,2.4vw,40px);letter-spacing:-0.025em;line-height:0.95;color:var(--fg);margin-top:14px;transition:letter-spacing 400ms ease}
+.app:hover .app-title{letter-spacing:0em}
+.app-tag{font-family:var(--font-mono);font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.app-bottom{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;padding-top:14px}
+.app-launch{font-family:var(--font-mono);font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted-soft);transition:color 200ms ease}
+.app:hover .app-launch{color:var(--fg)}
+.app-arrow{color:var(--fg);transition:transform 300ms ease}
+.app:hover .app-arrow{transform:translate(3px,-3px)}
+.app-arrow svg{width:18px;height:18px;display:block}
+.app::after{content:"";position:absolute;top:0;left:0;width:24px;height:2px;background:var(--accent,transparent);opacity:0;transition:opacity 250ms ease, width 400ms ease}
+.app:hover::after{opacity:1;width:48px}
+
+.utility{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--border)}
+.util{padding:16px 22px;border-right:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;transition:background 200ms ease}
+.util:last-child{border-right:none}
+.util:hover{background:rgba(255,255,255,0.025)}
+.util:active{background:rgba(255,255,255,0.06)}
+.util-meta{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.util-title{font-family:var(--font-display);font-weight:500;font-size:18px;letter-spacing:-0.01em;color:var(--fg)}
+.util-tag{font-family:var(--font-mono);font-size:9px;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted-soft)}
+.util.placeholder{cursor:default;pointer-events:none;opacity:0.45}
+.util.placeholder .util-title{color:var(--muted-soft);font-weight:400}
+.util-arrow svg{width:16px;height:16px;color:var(--muted)}
+
+.foot{display:flex;align-items:center;justify-content:space-between;padding:14px 0 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted-soft)}
+.foot-left,.foot-right{display:flex;align-items:center;gap:18px}
+
+.modal-back{
+  position:fixed;inset:0;z-index:50;
+  background:rgba(0,0,0,0.78);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  display:none;align-items:center;justify-content:center;
+  padding:32px;
+  animation:fadeIn 220ms ease;
+}
+.modal-back.active{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.modal{
+  position:relative;width:100%;max-width:780px;
+  background:#0e0e0e;border:1px solid var(--border-strong);border-radius:14px;
+  display:grid;grid-template-columns:1.05fr 1fr;overflow:hidden;
+  animation:slideUp 280ms cubic-bezier(0.2,0.8,0.2,1);
+}
+.modal-close{
+  position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;
+  border:1px solid var(--border);display:grid;place-items:center;
+  color:var(--muted);z-index:10;
+  transition:border-color 200ms ease,color 200ms ease;
+}
+.modal-close:hover{border-color:var(--border-strong);color:var(--fg)}
+.modal-close svg{width:16px;height:16px}
+
+.modal-left{padding:36px 36px 32px;display:flex;flex-direction:column;gap:18px;border-right:1px solid var(--border)}
+.modal-tag{font-family:var(--font-mono);font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--muted)}
+.modal-title{font-family:var(--font-display);font-weight:700;font-size:38px;letter-spacing:-0.025em;line-height:0.95}
+.modal-desc{font-size:13px;color:var(--muted);line-height:1.6;max-width:340px}
+.steps{margin-top:6px;display:flex;flex-direction:column;gap:14px}
+.step{display:flex;gap:16px;align-items:flex-start}
+.step-num{flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1px solid var(--border-strong);display:grid;place-items:center;font-family:var(--font-mono);font-size:10px;color:var(--fg)}
+.step-text{font-size:13px;color:var(--muted);line-height:1.5;padding-top:5px}
+.step-text b{color:var(--fg);font-weight:500}
+.modal-status{margin-top:auto;padding-top:18px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+.spinner{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--border-strong);border-top-color:var(--fg);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal-status[data-state="ok"]{color:var(--ok)}
+.modal-status[data-state="ok"] .spinner{border-color:var(--ok);border-top-color:var(--ok);animation:none;background:var(--ok);width:8px;height:8px;border-width:0}
+
+.modal-right{padding:36px 36px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(ellipse 80% 80% at 50% 30%, rgba(255,255,255,0.025), transparent 70%)}
+.qr-frame{width:260px;height:260px;background:var(--fg);border-radius:12px;padding:18px;display:grid;place-items:center}
+.qr-frame svg{width:100%;height:100%;display:block}
+.qr-url{font-family:var(--font-mono);font-size:10px;letter-spacing:0.05em;color:var(--muted-soft);text-align:center;word-break:break-all;max-width:280px;line-height:1.5}
+.qr-hint{font-family:var(--font-mono);font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted-soft)}
+
+@media (max-width:1280px){
+  main{padding:0 36px}
+  .hero{grid-template-columns:1fr;gap:24px;padding:32px 0}
+  .hero-meta{justify-content:flex-start}
+}
+@media (max-width:900px){
+  .streaming{grid-template-columns:repeat(2,1fr)}
+  .app{border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .utility{grid-template-columns:repeat(2,1fr)}
+  .util{border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .modal{grid-template-columns:1fr;max-width:520px;max-height:90vh;overflow-y:auto}
+  .modal-left{border-right:none;border-bottom:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+<main>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand-block" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="brand-text">Cockpit<small>thegridbase</small></div>
+    </div>
+    <div class="topbar-right">
+      <div class="status"><span class="status-dot"></span><span>Online</span></div>
+      <span id="clock" class="clock">--:--</span>
+      <button class="pill" id="pair-btn" type="button" aria-pressed="false" title="Pair phone to push URLs">
+        <span class="pill-dot"></span><span>Pair Phone</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 class="hero-headline"><span>Cockpit</span><span><em>for cabins</em></span></h1>
+    <div class="hero-meta">
+      <div class="hero-meta-row">In-cabin launcher</div>
+      <p class="hero-meta-desc">Tap to open. Pair your phone to push any URL straight to this screen &mdash; no typing, no logins shared with us. Your accounts stay where they are.</p>
+      <div class="hero-meta-row">Built on TheGridBase</div>
+    </div>
+  </section>
+
+  <div class="section-head"><span class="section-tag">Primary</span><span class="section-count">01 / 01</span></div>
+  <div class="primary-row" data-app="crd">
+    <div class="primary-grid">
+      <span class="primary-num">/00</span>
+      <span class="primary-title">Chrome Remote Desktop</span>
+      <span class="primary-tag">Mac control &middot; Keyboard &middot; Mouse</span>
+      <span class="primary-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+    </div>
+  </div>
+
+  <div class="section-head"><span class="section-tag">Streaming</span><span class="section-count">05 / 05</span></div>
+  <div class="streaming" id="streaming"></div>
+
+  <div class="section-head"><span class="section-tag">Utility</span><span class="section-count">01 / 05</span></div>
+  <div class="utility">
+    <div class="util" data-app="maps">
+      <div class="util-meta">
+        <span class="util-title">Maps</span>
+        <span class="util-tag">Navigate</span>
+      </div>
+      <span class="util-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+    </div>
+    <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
+    <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
+    <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
+    <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
+  </div>
+
+  <footer class="foot">
+    <div class="foot-left"><span>cockpit.thegridbase.com</span></div>
+    <div class="foot-right"><span>Phone &rarr; Screen</span></div>
+  </footer>
+
+</main>
+
+<div class="modal-back" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <button class="modal-close" id="modal-close" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-left">
+      <span class="modal-tag">Pair Phone</span>
+      <h2 class="modal-title" id="modal-title">Push URLs from your phone</h2>
+      <p class="modal-desc">Scan the QR with your phone camera. A small page opens where you can tap a quick-link or paste any URL &mdash; it appears here instantly.</p>
+      <div class="steps">
+        <div class="step"><span class="step-num">1</span><span class="step-text"><b>Scan QR</b> with phone camera. Page opens automatically.</span></div>
+        <div class="step"><span class="step-num">2</span><span class="step-text">Pick a quick-link, or paste any <b>https://</b> URL.</span></div>
+        <div class="step"><span class="step-num">3</span><span class="step-text">URL appears on this screen. No login shared, no data stored.</span></div>
+      </div>
+      <div class="modal-status" id="modal-status" data-state="waiting">
+        <span class="spinner"></span>
+        <span id="modal-status-text">Waiting for phone&hellip;</span>
+      </div>
+    </div>
+    <div class="modal-right">
+      <div class="qr-frame" id="qr-frame"></div>
+      <div class="qr-hint">Scan with phone camera</div>
+      <div class="qr-url" id="qr-url"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { getDatabase, ref, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+
+const FB_CONFIG = {
+  apiKey: 'AIzaSyBkvpRhWESyVaTzyUyL4A72vvSClrzMfiY',
+  authDomain: 'portfolio-cankilic-4931501.firebaseapp.com',
+  projectId: 'portfolio-cankilic-4931501',
+  databaseURL: 'https://portfolio-cankilic-4931501-default-rtdb.firebaseio.com',
+  appId: '1:284553444374:web:fd8357bbc8911f1b944937'
+};
+
+const APPS = {
+  netflix: { name:'Netflix',  tag:'Movies · Series', url:'https://www.netflix.com/',  accent:'#e50914', num:'/01' },
+  youtube: { name:'YouTube',  tag:'Video · Live',    url:'https://www.youtube.com/',  accent:'#ff0033', num:'/02' },
+  disney:  { name:'Disney+',  tag:'Family · Marvel', url:'https://www.disneyplus.com/', accent:'#1a4ff5', num:'/03' },
+  max:     { name:'Max',      tag:'HBO · Premium',   url:'https://www.max.com/',      accent:'#0026ff', num:'/04' },
+  appletv: { name:'Apple TV+',tag:'Originals',       url:'https://tv.apple.com/',     accent:'#ffffff', num:'/05' },
+  crd:     { name:'Chrome Remote Desktop', tag:'Mac control', url:'https://remotedesktop.google.com/access' },
+  maps:    { name:'Google Maps',           tag:'Navigate',    url:'https://maps.google.com/' }
+};
+
+const streamingEl = document.getElementById('streaming');
+['netflix','youtube','disney','max','appletv'].forEach(slug => {
+  const a = APPS[slug];
+  const tpl = document.createElement('div');
+  tpl.className = 'app';
+  tpl.dataset.app = slug;
+  tpl.style.setProperty('--accent', a.accent);
+  tpl.innerHTML = `
+    <div>
+      <div class="app-top"><span class="app-num">${a.num}</span></div>
+      <h3 class="app-title">${a.name.replace('Apple TV+','Apple&nbsp;TV+')}</h3>
+      <span class="app-tag">${a.tag}</span>
+    </div>
+    <div class="app-bottom">
+      <span class="app-launch">Launch</span>
+      <span class="app-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+    </div>
+  `;
+  streamingEl.appendChild(tpl);
+});
+
+function launch(url){
+  if(!/^https:\/\//.test(url)) return;
+  window.location.href = url;
+}
+
+document.body.addEventListener('click', (e) => {
+  if(e.target.closest('.modal-back') || e.target.closest('#pair-btn')) return;
+  const card = e.target.closest('[data-app]');
+  if(card){
+    const slug = card.getAttribute('data-app');
+    if(APPS[slug]) launch(APPS[slug].url);
+  }
+});
+
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const el = document.getElementById('clock');
+  if(el) el.textContent = h + ':' + m;
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+const fbApp = initializeApp(FB_CONFIG);
+const fbDb = getDatabase(fbApp);
+
+const modal = document.getElementById('modal');
+const modalClose = document.getElementById('modal-close');
+const modalStatus = document.getElementById('modal-status');
+const modalStatusText = document.getElementById('modal-status-text');
+const qrFrame = document.getElementById('qr-frame');
+const qrUrl = document.getElementById('qr-url');
+const pairBtn = document.getElementById('pair-btn');
+
+let activeSession = null;
+
+function bytesToB64url(buf){
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  for(let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function randomId(len){
+  const bytes = crypto.getRandomValues(new Uint8Array(len));
+  return bytesToB64url(bytes).slice(0, len);
+}
+
+function openPair(){
+  if(activeSession) closePair(false);
+
+  const id = randomId(20);
+  const pairUrl = `https://${location.host}/pair#${id}`;
+
+  modalStatus.dataset.state = 'waiting';
+  modalStatusText.textContent = 'Waiting for phone…';
+  modalStatus.querySelector('.spinner').style.display = '';
+
+  try {
+    const qr = window.qrcode(0, 'M');
+    qr.addData(pairUrl);
+    qr.make();
+    qrFrame.innerHTML = qr.createSvgTag({ scalable:true, margin:1, cellSize:4 });
+    qrFrame.querySelector('svg').setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  } catch(err){
+    qrFrame.innerHTML = '<div style="color:#000;font:12px monospace;text-align:center;padding:20px">QR error</div>';
+  }
+  qrUrl.textContent = pairUrl.replace(/^https?:\/\//,'');
+
+  const dbRef = ref(fbDb, 'cockpit-sessions/' + id);
+  const unsub = onValue(dbRef, (snap) => {
+    const data = snap.val();
+    if(!data || typeof data.url !== 'string') return;
+    if(!/^https:\/\//.test(data.url)) return;
+    const target = data.url;
+    remove(dbRef).catch(()=>{});
+    unsub();
+    activeSession = null;
+    modalStatus.dataset.state = 'ok';
+    modalStatusText.textContent = 'Opening…';
+    modalStatus.querySelector('.spinner').style.display = 'none';
+    setTimeout(() => {
+      modal.classList.remove('active');
+      pairBtn.dataset.on = '0';
+      launch(target);
+    }, 350);
+  });
+
+  activeSession = { id, unsub, dbRef };
+  modal.classList.add('active');
+  pairBtn.dataset.on = '1';
+}
+
+function closePair(closeModal = true){
+  if(activeSession){
+    if(activeSession.unsub) try { activeSession.unsub(); } catch(_){}
+    if(activeSession.dbRef) remove(activeSession.dbRef).catch(()=>{});
+    activeSession = null;
+  }
+  pairBtn.dataset.on = '0';
+  if(closeModal) modal.classList.remove('active');
+}
+
+pairBtn.addEventListener('click', () => {
+  if(modal.classList.contains('active')) closePair(true);
+  else openPair();
+});
+modalClose.addEventListener('click', () => closePair(true));
+modal.addEventListener('click', (e) => { if(e.target === modal) closePair(true); });
+document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && modal.classList.contains('active')) closePair(true); });
+
+window.__cockpit = { openPair, closePair };
+</script>
+</body>
+</html>

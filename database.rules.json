@@ -1,0 +1,13 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "cockpit-sessions": {
+      "$sessionId": {
+        ".read": "$sessionId.length >= 16 && $sessionId.length <= 48",
+        ".write": "$sessionId.length >= 16 && $sessionId.length <= 48",
+        ".validate": "!newData.exists() || (newData.hasChildren(['url']) && newData.child('url').isString() && newData.child('url').val().length <= 2048 && newData.child('url').val().matches(/^https:[/][/]/))"
+      }
+    }
+  }
+}

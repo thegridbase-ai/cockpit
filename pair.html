@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>Pair &middot; Cockpit</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='6' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='6' y='18' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='18' width='8' height='8' fill='%23f2f2f0'/></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#0a0a0a;
+  --fg:#f2f2f0;
+  --muted:rgba(242,242,240,0.45);
+  --muted-soft:rgba(242,242,240,0.22);
+  --border:rgba(255,255,255,0.08);
+  --border-strong:rgba(255,255,255,0.18);
+  --ok:#7cf5b6;
+  --err:#f57c8f;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  background:var(--bg);color:var(--fg);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  padding:20px 18px 40px;max-width:520px;margin:0 auto;
+  -webkit-tap-highlight-color:transparent;
+}
+
+header{display:flex;align-items:center;gap:14px;padding:16px 0 24px;border-bottom:1px solid var(--border)}
+.brand-block{display:grid;grid-template-columns:repeat(2,16px);grid-template-rows:repeat(2,16px);gap:1px;width:33px;height:33px}
+.brand-block i{background:var(--fg);display:block}
+.brand-text{font-family:var(--font-mono);font-size:10px;letter-spacing:0.32em;text-transform:uppercase}
+.brand-text small{display:block;color:var(--muted);margin-top:4px;letter-spacing:0.28em}
+
+.section-tag{font-family:var(--font-mono);font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:12px;padding:28px 0 12px}
+.section-tag::before{content:"";width:24px;height:1px;background:var(--border-strong)}
+
+.intro{padding:24px 0 8px}
+.intro-title{font-family:var(--font-display);font-weight:700;font-size:38px;letter-spacing:-0.025em;line-height:1}
+.intro-desc{font-size:13px;color:var(--muted);line-height:1.55;margin-top:10px;max-width:380px}
+
+.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:6px 0}
+.quick{
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+  padding:14px 16px;background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);border-radius:10px;color:var(--fg);
+  cursor:pointer;text-align:left;transition:background 200ms ease,border-color 200ms ease;
+  font:inherit;
+}
+.quick:hover{background:rgba(255,255,255,0.05);border-color:var(--border-strong)}
+.quick:active{background:rgba(255,255,255,0.08)}
+.quick-name{font-family:var(--font-display);font-weight:600;font-size:16px;letter-spacing:-0.01em}
+.quick-tag{font-family:var(--font-mono);font-size:9px;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted-soft)}
+
+form{display:flex;flex-direction:column;gap:14px;padding:8px 0 4px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field label{font-family:var(--font-mono);font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted)}
+.field input{
+  width:100%;padding:16px 14px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;
+  color:var(--fg);font-family:var(--font-mono);font-size:14px;
+  transition:border-color 200ms ease,background 200ms ease;
+  -webkit-appearance:none;
+}
+.field input:focus{outline:none;border-color:var(--border-strong);background:rgba(255,255,255,0.05)}
+.field input::placeholder{color:var(--muted-soft)}
+
+button.primary{
+  margin-top:6px;padding:18px 22px;background:var(--fg);color:var(--bg);
+  border:none;border-radius:8px;
+  font-family:var(--font-display);font-weight:600;font-size:15px;letter-spacing:0.04em;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:opacity 200ms ease,transform 80ms ease;
+}
+button.primary:active{transform:scale(0.98)}
+button.primary:disabled{opacity:0.4;cursor:default}
+button.primary svg{width:18px;height:18px}
+
+.notice{font-family:var(--font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted-soft);text-align:center;margin-top:18px;line-height:1.6}
+
+.state{
+  margin-top:20px;padding:24px 18px;
+  border:1px solid var(--border);border-radius:10px;
+  display:none;flex-direction:column;align-items:center;gap:10px;text-align:center;
+}
+.state.active{display:flex}
+.state[data-kind="ok"]{border-color:rgba(124,245,182,0.3);background:rgba(124,245,182,0.04)}
+.state[data-kind="err"]{border-color:rgba(245,124,143,0.3);background:rgba(245,124,143,0.04)}
+.state-icon{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--border-strong)}
+.state[data-kind="ok"] .state-icon{border-color:var(--ok);color:var(--ok)}
+.state[data-kind="err"] .state-icon{border-color:var(--err);color:var(--err)}
+.state-icon svg{width:22px;height:22px}
+.state-title{font-family:var(--font-display);font-weight:600;font-size:18px;letter-spacing:-0.01em}
+.state-desc{font-size:13px;color:var(--muted);line-height:1.55;max-width:320px}
+
+.invalid{margin:40px auto;padding:32px 22px;border:1px solid var(--border);border-radius:10px;text-align:center;display:none}
+.invalid.active{display:block}
+.invalid h2{font-family:var(--font-display);font-weight:600;font-size:22px;margin-bottom:10px}
+.invalid p{font-size:13px;color:var(--muted);line-height:1.6}
+
+footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted-soft);display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-block" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="brand-text">Cockpit &middot; Pair<small>thegridbase</small></div>
+</header>
+
+<div id="invalid" class="invalid">
+  <h2>Invalid pairing link</h2>
+  <p>Open <span style="font-family:var(--font-mono)">cockpit.thegridbase.com</span> on the car screen, tap <em>Pair Phone</em>, and scan the QR with this device.</p>
+</div>
+
+<main id="form-wrap" style="display:none">
+  <div class="intro">
+    <h1 class="intro-title">Push to screen</h1>
+    <p class="intro-desc">Pick a quick-link below or paste any <b>https://</b> URL. It opens on the car screen instantly. We don't store the URL.</p>
+  </div>
+
+  <div class="section-tag">Quick links</div>
+  <div class="quick-grid" id="quick-grid"></div>
+
+  <div class="section-tag">Custom URL</div>
+  <form id="form" autocomplete="off">
+    <div class="field">
+      <label for="url">Any https:// URL</label>
+      <input id="url" name="url" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" required placeholder="https://...">
+    </div>
+    <button class="primary" type="submit" id="submit-btn">
+      <span>Send to screen</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </button>
+  </form>
+
+  <p class="notice">URL only. No login, no password, no personal data.</p>
+
+  <div id="state" class="state">
+    <div class="state-icon" id="state-icon"></div>
+    <div class="state-title" id="state-title"></div>
+    <div class="state-desc" id="state-desc"></div>
+  </div>
+</main>
+
+<footer>
+  <span>cockpit.thegridbase.com</span>
+  <span>URL Relay</span>
+</footer>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+
+const FB_CONFIG = {
+  apiKey: 'AIzaSyBkvpRhWESyVaTzyUyL4A72vvSClrzMfiY',
+  authDomain: 'portfolio-cankilic-4931501.firebaseapp.com',
+  projectId: 'portfolio-cankilic-4931501',
+  databaseURL: 'https://portfolio-cankilic-4931501-default-rtdb.firebaseio.com',
+  appId: '1:284553444374:web:fd8357bbc8911f1b944937'
+};
+
+const QUICK = [
+  { name:'Netflix',  tag:'Movies',  url:'https://www.netflix.com/' },
+  { name:'YouTube',  tag:'Video',   url:'https://www.youtube.com/' },
+  { name:'Disney+',  tag:'Family',  url:'https://www.disneyplus.com/' },
+  { name:'Max',      tag:'HBO',     url:'https://www.max.com/' },
+  { name:'Apple TV+',tag:'Originals',url:'https://tv.apple.com/' },
+  { name:'Maps',     tag:'Navigate',url:'https://maps.google.com/' },
+  { name:'Remote Desktop', tag:'Mac', url:'https://remotedesktop.google.com/access' }
+];
+
+function parseHash(){
+  const h = (location.hash || '').replace(/^#/,'');
+  if(!h) return null;
+  if(!/^[A-Za-z0-9_-]{16,48}$/.test(h)) return null;
+  return { id: h };
+}
+
+const params = parseHash();
+const invalidEl = document.getElementById('invalid');
+const formWrap = document.getElementById('form-wrap');
+const stateEl = document.getElementById('state');
+const submitBtn = document.getElementById('submit-btn');
+
+if(!params){
+  invalidEl.classList.add('active');
+} else {
+  formWrap.style.display = 'block';
+
+  const fbApp = initializeApp(FB_CONFIG);
+  const fbDb = getDatabase(fbApp);
+
+  const grid = document.getElementById('quick-grid');
+  QUICK.forEach((q) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'quick';
+    btn.innerHTML = `<span class="quick-name">${q.name}</span><span class="quick-tag">${q.tag}</span>`;
+    btn.addEventListener('click', () => sendUrl(q.url));
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v = document.getElementById('url').value.trim();
+    if(!/^https:\/\//i.test(v)){
+      showState('err','HTTPS only','Only https:// URLs can be sent for security.');
+      return;
+    }
+    if(v.length > 2048){
+      showState('err','URL too long','Keep it under 2048 characters.');
+      return;
+    }
+    sendUrl(v);
+  });
+
+  async function sendUrl(url){
+    submitBtn.disabled = true;
+    document.querySelectorAll('.quick').forEach(b => b.disabled = true);
+    try {
+      await set(ref(fbDb, 'cockpit-sessions/' + params.id), { url, ts: Date.now() });
+      showState('ok','Sent','Open the car screen — your URL is loading there now.');
+      submitBtn.style.display = 'none';
+    } catch(err){
+      const msg = (err && err.message) || 'Unknown error';
+      let title = 'Send failed';
+      let desc = msg;
+      if(/PERMISSION_DENIED/i.test(msg)){
+        title = 'Pairing expired';
+        desc = 'Re-open Pair Phone on the car screen and scan the new QR.';
+      }
+      showState('err', title, desc);
+      submitBtn.disabled = false;
+      document.querySelectorAll('.quick').forEach(b => b.disabled = false);
+    }
+  }
+
+  function showState(kind, title, desc){
+    stateEl.classList.add('active');
+    stateEl.dataset.kind = kind;
+    const icon = kind === 'ok'
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+    document.getElementById('state-icon').innerHTML = icon;
+    document.getElementById('state-title').textContent = title;
+    document.getElementById('state-desc').textContent = desc || '';
+    stateEl.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+</script>
+</body>
+</html>
