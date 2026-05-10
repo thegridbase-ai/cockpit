@@ -216,6 +216,9 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
       <button class="pill" id="pair-btn" type="button" aria-pressed="false" title="Pair phone to push URLs">
         <span class="pill-dot"></span><span>Pair Phone</span>
       </button>
+      <button class="pill" id="boost-btn" type="button" aria-pressed="false" title="Routes links via youtube.com to trigger fullscreen on in-car browsers (Tesla / EV center displays).">
+        <span class="pill-dot"></span><span>Streaming Boost</span>
+      </button>
     </div>
   </header>
 
@@ -258,7 +261,7 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
 
   <footer class="foot">
     <div class="foot-left"><span>cockpit.thegridbase.com</span></div>
-    <div class="foot-right"><span>Phone &rarr; Screen</span></div>
+    <div class="foot-right"><span id="foot-status">Phone &rarr; Screen</span></div>
   </footer>
 
 </main>
@@ -334,13 +337,31 @@ const streamingEl = document.getElementById('streaming');
   streamingEl.appendChild(tpl);
 });
 
+let boost = localStorage.getItem('cockpit.boost') === '1';
+const boostBtn = document.getElementById('boost-btn');
+const footStatus = document.getElementById('foot-status');
+
+function applyBoost(){
+  boostBtn.dataset.on = boost ? '1' : '0';
+  boostBtn.setAttribute('aria-pressed', boost ? 'true' : 'false');
+  if(footStatus) footStatus.textContent = boost ? 'Streaming Boost · YouTube redirect' : 'Phone → Screen';
+}
+applyBoost();
+boostBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  boost = !boost;
+  localStorage.setItem('cockpit.boost', boost ? '1' : '0');
+  applyBoost();
+});
+
 function launch(url){
   if(!/^https:\/\//.test(url)) return;
-  window.location.href = url;
+  const target = boost ? 'https://www.youtube.com/redirect?q=' + encodeURIComponent(url) : url;
+  window.location.href = target;
 }
 
 document.body.addEventListener('click', (e) => {
-  if(e.target.closest('.modal-back') || e.target.closest('#pair-btn')) return;
+  if(e.target.closest('.modal-back') || e.target.closest('#pair-btn') || e.target.closest('#boost-btn')) return;
   const card = e.target.closest('[data-app]');
   if(card){
     const slug = card.getAttribute('data-app');
