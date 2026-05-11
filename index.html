@@ -344,7 +344,7 @@ const footStatus = document.getElementById('foot-status');
 function applyBoost(){
   boostBtn.dataset.on = boost ? '1' : '0';
   boostBtn.setAttribute('aria-pressed', boost ? 'true' : 'false');
-  if(footStatus) footStatus.textContent = boost ? 'Streaming Boost · YouTube redirect' : 'Phone → Screen';
+  if(footStatus) footStatus.textContent = boost ? 'Streaming Boost · Tap “Go to site” on YouTube warning' : 'Phone → Screen';
 }
 applyBoost();
 boostBtn.addEventListener('click', (e) => {
@@ -354,9 +354,13 @@ boostBtn.addEventListener('click', (e) => {
   applyBoost();
 });
 
+function shouldBypassBoost(url){
+  return /^https:\/\/([^/]*\.)?(google\.com\/maps|maps\.google\.com|remotedesktop\.google\.com|google\.[a-z.]+\/maps)/i.test(url);
+}
 function launch(url){
   if(!/^https:\/\//.test(url)) return;
-  const target = boost ? 'https://www.youtube.com/redirect?q=' + encodeURIComponent(url) : url;
+  const useBoost = boost && !shouldBypassBoost(url);
+  const target = useBoost ? 'https://www.youtube.com/redirect?q=' + encodeURIComponent(url) : url;
   window.location.href = target;
 }
 

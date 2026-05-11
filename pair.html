@@ -174,7 +174,7 @@ const QUICK = [
   { name:'Disney+',  tag:'Family',  url:'https://www.disneyplus.com/' },
   { name:'Max',      tag:'HBO',     url:'https://www.max.com/' },
   { name:'Apple TV+',tag:'Originals',url:'https://tv.apple.com/' },
-  { name:'Maps',     tag:'Navigate',url:'https://maps.google.com/' },
+  { name:'Maps',     tag:'My location',geo:true,fallback:'https://maps.google.com/' },
   { name:'Remote Desktop', tag:'Mac', url:'https://remotedesktop.google.com/access' }
 ];
 
@@ -205,9 +205,41 @@ if(!params){
     btn.type = 'button';
     btn.className = 'quick';
     btn.innerHTML = `<span class="quick-name">${q.name}</span><span class="quick-tag">${q.tag}</span>`;
-    btn.addEventListener('click', () => sendUrl(q.url));
+    btn.addEventListener('click', () => {
+      if(q.geo) return sendGeo(q);
+      sendUrl(q.url);
+    });
     grid.appendChild(btn);
   });
+
+  function sendGeo(q){
+    if(!('geolocation' in navigator)){
+      return sendUrl(q.fallback);
+    }
+    const tag = stateEl.classList.contains('active') ? null : null;
+    showState('ok','Getting location…','Waiting for your phone to share GPS.');
+    document.querySelector('.state-icon').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const lat = latitude.toFixed(6);
+        const lng = longitude.toFixed(6);
+        const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+        stateEl.classList.remove('active');
+        sendUrl(url);
+      },
+      (err) => {
+        stateEl.classList.remove('active');
+        if(err && err.code === 1){
+          showState('err','Location blocked','Allow location for this site in your phone settings, or tap Maps again to retry.');
+        } else {
+          showState('err','Location unavailable','Sending generic Maps instead.');
+          setTimeout(() => sendUrl(q.fallback), 800);
+        }
+      },
+      { enableHighAccuracy:true, timeout:8000, maximumAge:60000 }
+    );
+  }
 
   document.getElementById('form').addEventListener('submit', (e) => {
     e.preventDefault();
