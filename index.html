@@ -129,6 +129,8 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
 
 .foot{display:flex;align-items:center;justify-content:space-between;padding:14px 0 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted-soft)}
 .foot-left,.foot-right{display:flex;align-items:center;gap:18px}
+.foot-build{color:var(--muted-soft);letter-spacing:0.18em;text-transform:none}
+#refresh-btn svg{width:11px;height:11px}
 
 .modal-back{
   position:fixed;inset:0;z-index:50;
@@ -219,6 +221,10 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
       <button class="pill" id="boost-btn" type="button" aria-pressed="false" title="Routes links via youtube.com to trigger fullscreen on in-car browsers (Tesla / EV center displays).">
         <span class="pill-dot"></span><span>Streaming Boost</span>
       </button>
+      <button class="pill" id="refresh-btn" type="button" title="Force fresh load — bypass car browser cache">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.36L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.36L3 16"/><path d="M3 21v-5h5"/></svg>
+        <span>Refresh</span>
+      </button>
     </div>
   </header>
 
@@ -260,7 +266,7 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
   </div>
 
   <footer class="foot">
-    <div class="foot-left"><span>cockpit.thegridbase.com</span></div>
+    <div class="foot-left"><span>cockpit.thegridbase.com</span><span class="foot-build">build · __BUILD__</span></div>
     <div class="foot-right"><span id="foot-status">Phone &rarr; Screen</span></div>
   </footer>
 
@@ -364,8 +370,16 @@ function launch(url){
   window.location.href = target;
 }
 
+const refreshBtn = document.getElementById('refresh-btn');
+refreshBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const u = new URL(location.href);
+  u.searchParams.set('v', Date.now().toString());
+  location.replace(u.toString());
+});
+
 document.body.addEventListener('click', (e) => {
-  if(e.target.closest('.modal-back') || e.target.closest('#pair-btn') || e.target.closest('#boost-btn')) return;
+  if(e.target.closest('.modal-back') || e.target.closest('#pair-btn') || e.target.closest('#boost-btn') || e.target.closest('#refresh-btn')) return;
   const card = e.target.closest('[data-app]');
   if(card){
     const slug = card.getAttribute('data-app');

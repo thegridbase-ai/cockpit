@@ -1,19 +1,33 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "buildCommand": "ts=$(date -u +%Y-%m-%d\\ %H:%MZ); commit=${VERCEL_GIT_COMMIT_SHA:-local}; short=${commit:0:7}; sed -i \"s|__BUILD__|$ts · $short|g\" index.html pair.html; echo \"build stamped: $ts · $short\"",
+  "outputDirectory": ".",
   "headers": [
+    {
+      "source": "/",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/pair",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/(.*\\.html)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=0, must-revalidate" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Referrer-Policy", "value": "no-referrer" },
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
-      ]
-    },
-    {
-      "source": "/(.*\\.html)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=300, must-revalidate" }
       ]
     }
   ]
