@@ -87,6 +87,11 @@ if sudo launchctl list 2>/dev/null | grep -q "com.cloudflare.cloudflared"; then
   sudo cloudflared service uninstall 2>/dev/null || true
 fi
 sudo cloudflared service install
+# Service runs as root and reads config from /etc/cloudflared, not $HOME/.cloudflared
+sudo mkdir -p /etc/cloudflared
+sudo cp "$HOME/.cloudflared/config.yml" /etc/cloudflared/
+sudo cp "$HOME/.cloudflared/$TUNNEL_ID.json" /etc/cloudflared/
+sudo launchctl kickstart -k system/com.cloudflare.cloudflared 2>/dev/null || true
 ok "cloudflared service installed and started"
 
 # ─── websockify launchd agent ─────────────────────────────────────────────────
