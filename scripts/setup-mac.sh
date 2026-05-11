@@ -29,7 +29,14 @@ command -v git  >/dev/null 2>&1 || brew install git
 
 info "Installing cloudflared and websockify (idempotent)"
 brew list cloudflared >/dev/null 2>&1 || brew install cloudflared
-brew list websockify  >/dev/null 2>&1 || brew install websockify
+# websockify is a Python package — use pipx for isolation
+if ! command -v websockify >/dev/null 2>&1; then
+  brew list pipx >/dev/null 2>&1 || brew install pipx
+  pipx ensurepath >/dev/null 2>&1 || true
+  pipx install websockify
+fi
+# pipx installs to ~/.local/bin which may not be on PATH yet in this shell
+export PATH="$HOME/.local/bin:$PATH"
 ok "tools ready"
 
 # ─── noVNC ────────────────────────────────────────────────────────────────────
