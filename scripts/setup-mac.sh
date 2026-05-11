@@ -87,11 +87,24 @@ if sudo launchctl list 2>/dev/null | grep -q "com.cloudflare.cloudflared"; then
   sudo cloudflared service uninstall 2>/dev/null || true
 fi
 sudo cloudflared service install
-# Service runs as root and reads config from /etc/cloudflared, not $HOME/.cloudflared
+# Service runs as root and reads config from /etc/cloudflared
 sudo mkdir -p /etc/cloudflared
 sudo cp "$HOME/.cloudflared/config.yml" /etc/cloudflared/
 sudo cp "$HOME/.cloudflared/$TUNNEL_ID.json" /etc/cloudflared/
-sudo launchctl kickstart -k system/com.cloudflare.cloudflared 2>/dev/null || true
+# cloudflared 2026.3 service install bug: ProgramArguments missing tunnel run + config
+# Patch the plist to add the required args.
+PLIST_PATH="/Library/LaunchDaemons/com.cloudflare.cloudflared.plist"
+if sudo plutil -p "$PLIST_PATH" 2>/dev/null | grep -q '"--config"'; then
+  : # already patched
+else
+  sudo plutil -insert ProgramArguments.1 -string "--no-autoupdate" "$PLIST_PATH"
+  sudo plutil -insert ProgramArguments.2 -string "--config" "$PLIST_PATH"
+  sudo plutil -insert ProgramArguments.3 -string "/etc/cloudflared/config.yml" "$PLIST_PATH"
+  sudo plutil -insert ProgramArguments.4 -string "tunnel" "$PLIST_PATH"
+  sudo plutil -insert ProgramArguments.5 -string "run" "$PLIST_PATH"
+fi
+sudo launchctl bootout system/com.cloudflare.cloudflared 2>/dev/null || true
+sudo launchctl bootstrap system "$PLIST_PATH"
 ok "cloudflared service installed and started"
 
 # ─── websockify launchd agent ─────────────────────────────────────────────────
