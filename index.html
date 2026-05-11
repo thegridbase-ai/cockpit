@@ -259,6 +259,13 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
       </div>
       <span class="util-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
     </div>
+    <div class="util" data-app="mac">
+      <div class="util-meta">
+        <span class="util-title">Mac</span>
+        <span class="util-tag">Remote desktop</span>
+      </div>
+      <span class="util-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+    </div>
     <div class="util" data-app="google-signin">
       <div class="util-meta">
         <span class="util-title">Google sign-in</span>
@@ -266,7 +273,6 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
       </div>
       <span class="util-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
     </div>
-    <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
     <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
     <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
   </div>
@@ -326,7 +332,8 @@ const APPS = {
   appletv: { name:'Apple TV+',tag:'Originals',       url:'https://tv.apple.com/',     accent:'#ffffff', num:'/05' },
   crd:     { name:'Chrome Remote Desktop', tag:'Mac control', url:'https://remotedesktop.google.com/access' },
   maps:    { name:'Google Maps',           tag:'Navigate',    url:'https://maps.google.com/' },
-  'google-signin': { name:'Google sign-in', tag:'Account', url:'https://accounts.google.com/' }
+  'google-signin': { name:'Google sign-in', tag:'Account', url:'https://accounts.google.com/' },
+  mac:     { name:'Mac',                   tag:'Remote desktop', url:'https://mac.thegridbase.com/' }
 };
 
 const streamingEl = document.getElementById('streaming');
@@ -368,7 +375,7 @@ boostBtn.addEventListener('click', (e) => {
 });
 
 function shouldBypassBoost(url){
-  return /^https:\/\/([^/]*\.)?(google\.com\/maps|maps\.google\.com|remotedesktop\.google\.com|google\.[a-z.]+\/maps)/i.test(url);
+  return /^https:\/\/([^/]*\.)?(google\.com\/maps|maps\.google\.com|remotedesktop\.google\.com|google\.[a-z.]+\/maps|mac\.thegridbase\.com|accounts\.google\.com)/i.test(url);
 }
 function launch(url){
   if(!/^https:\/\//.test(url)) return;
