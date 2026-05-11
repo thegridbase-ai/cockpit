@@ -48,6 +48,7 @@ header{display:flex;align-items:center;gap:14px;padding:16px 0 24px;border-botto
 .intro-desc{font-size:13px;color:var(--muted);line-height:1.55;margin-top:10px;max-width:380px}
 
 .quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:6px 0}
+.signin-hint{font-size:12px;color:var(--muted);line-height:1.5;margin:2px 0 8px;max-width:380px}
 .quick{
   display:flex;flex-direction:column;align-items:flex-start;gap:4px;
   padding:14px 16px;background:rgba(255,255,255,0.03);
@@ -131,6 +132,10 @@ footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--border);font-
   <div class="section-tag">Quick links</div>
   <div class="quick-grid" id="quick-grid"></div>
 
+  <div class="section-tag">Sign-in helpers</div>
+  <p class="signin-hint">Opens the device-code page on the car screen. Type the code shown there into the same page on your phone — the app signs in automatically.</p>
+  <div class="quick-grid" id="signin-grid"></div>
+
   <div class="section-tag">Custom URL</div>
   <form id="form" autocomplete="off">
     <div class="field">
@@ -179,6 +184,15 @@ const QUICK = [
   { name:'Remote Desktop', tag:'Mac', url:'https://remotedesktop.google.com/access' }
 ];
 
+const SIGNIN = [
+  { name:'Google',   tag:'Device code', url:'https://www.google.com/device' },
+  { name:'Netflix',  tag:'TV code',     url:'https://www.netflix.com/tv8' },
+  { name:'Disney+',  tag:'TV code',     url:'https://www.disneyplus.com/begin' },
+  { name:'YouTube',  tag:'Activate',    url:'https://www.youtube.com/activate' },
+  { name:'Max',      tag:'Connect',     url:'https://play.max.com/code' },
+  { name:'Spotify',  tag:'Pair',        url:'https://www.spotify.com/pair' }
+];
+
 function parseHash(){
   const h = (location.hash || '').replace(/^#/,'');
   if(!h) return null;
@@ -211,6 +225,16 @@ if(!params){
       sendUrl(q.url);
     });
     grid.appendChild(btn);
+  });
+
+  const signinGrid = document.getElementById('signin-grid');
+  SIGNIN.forEach((q) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'quick';
+    btn.innerHTML = `<span class="quick-name">${q.name}</span><span class="quick-tag">${q.tag}</span>`;
+    btn.addEventListener('click', () => sendUrl(q.url));
+    signinGrid.appendChild(btn);
   });
 
   function sendGeo(q){

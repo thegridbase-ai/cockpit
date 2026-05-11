@@ -259,8 +259,20 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
       </div>
       <span class="util-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
     </div>
-    <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
-    <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
+    <div class="util" data-app="google-signin">
+      <div class="util-meta">
+        <span class="util-title">Google sign-in</span>
+        <span class="util-tag">Needed for CRD</span>
+      </div>
+      <span class="util-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+    </div>
+    <div class="util" data-app="reemo">
+      <div class="util-meta">
+        <span class="util-title">Reemo</span>
+        <span class="util-tag">CRD alternative</span>
+      </div>
+      <span class="util-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+    </div>
     <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
     <div class="util placeholder"><div class="util-meta"><span class="util-title">&mdash;</span><span class="util-tag">Slot</span></div></div>
   </div>
@@ -319,7 +331,9 @@ const APPS = {
   max:     { name:'Max',      tag:'HBO · Premium',   url:'https://www.max.com/',      accent:'#0026ff', num:'/04' },
   appletv: { name:'Apple TV+',tag:'Originals',       url:'https://tv.apple.com/',     accent:'#ffffff', num:'/05' },
   crd:     { name:'Chrome Remote Desktop', tag:'Mac control', url:'https://remotedesktop.google.com/access' },
-  maps:    { name:'Google Maps',           tag:'Navigate',    url:'https://maps.google.com/' }
+  maps:    { name:'Google Maps',           tag:'Navigate',    url:'https://maps.google.com/' },
+  'google-signin': { name:'Google sign-in', tag:'Account', url:'https://accounts.google.com/' },
+  reemo:   { name:'Reemo',                 tag:'Remote desktop', url:'https://app.reemo.io/' }
 };
 
 const streamingEl = document.getElementById('streaming');
