@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="referrer" content="no-referrer">
+<title>Mac · Cockpit</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='6' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='6' y='18' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='18' width='8' height='8' fill='%23f2f2f0'/></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;width:100%;background:#0a0a0a;color:#f2f2f0;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;font-family:'JetBrains Mono',ui-monospace,monospace}
+
+.wrap{display:flex;flex-direction:column;height:100vh}
+.screen{flex:1;position:relative;background:#000}
+.screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+
+.bar{
+  position:absolute;top:10px;right:10px;z-index:10;
+  display:flex;gap:8px;
+}
+.btn{
+  padding:8px 14px;background:rgba(0,0,0,0.7);color:#f2f2f0;
+  border:1px solid rgba(255,255,255,0.35);border-radius:999px;
+  font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.18em;text-transform:uppercase;
+  cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.btn:hover{background:rgba(0,0,0,0.85);border-color:rgba(255,255,255,0.55)}
+.btn[data-on="1"]{background:#7cf5b6;color:#0a0a0a;border-color:#7cf5b6}
+.btn svg{width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px}
+
+/* Keyboard panel */
+.kbd{
+  background:#0a0a0a;border-top:1px solid rgba(255,255,255,0.18);
+  padding:8px 8px 10px;
+  display:none;
+  flex-shrink:0;
+}
+.kbd.on{display:block}
+.kbd-row{display:flex;gap:6px;justify-content:center;margin-bottom:6px}
+.kbd-row:last-child{margin-bottom:0}
+.key{
+  flex:1 1 0;min-width:0;max-width:64px;
+  height:42px;
+  background:rgba(255,255,255,0.06);
+  color:#f2f2f0;
+  border:1px solid rgba(255,255,255,0.18);border-radius:8px;
+  font:500 15px -apple-system,'JetBrains Mono',monospace;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background 100ms,transform 50ms;
+}
+.key:active{background:rgba(255,255,255,0.2);transform:scale(0.94)}
+.key.wide{flex-grow:1.5;max-width:none;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(242,242,240,0.85)}
+.key.x-wide{flex-grow:3;max-width:none;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(242,242,240,0.85)}
+.key.tinted{background:rgba(124,245,182,0.15);border-color:rgba(124,245,182,0.5);color:#7cf5b6}
+.key.tinted:active{background:rgba(124,245,182,0.3)}
+.key.danger{color:#f57c8f;border-color:rgba(245,124,143,0.4)}
+.key.shift-active{background:rgba(124,245,182,0.2);border-color:rgba(124,245,182,0.6)}
+
+.toast{
+  position:absolute;left:50%;top:20px;transform:translateX(-50%);
+  padding:10px 16px;background:rgba(0,0,0,0.85);color:#f2f2f0;
+  border:1px solid rgba(255,255,255,0.3);border-radius:999px;
+  font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.18em;text-transform:uppercase;
+  display:none;z-index:20;backdrop-filter:blur(8px);
+}
+.toast.on{display:block;animation:toastIn 200ms ease}
+.toast[data-kind="err"]{color:#f57c8f;border-color:rgba(245,124,143,0.5)}
+.toast[data-kind="ok"]{color:#7cf5b6;border-color:rgba(124,245,182,0.5)}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
+
+@media (max-width:900px){
+  .key{height:38px;font-size:14px;max-width:none}
+  .kbd{padding:6px 4px 8px}
+  .kbd-row{gap:4px;margin-bottom:4px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="screen">
+    <iframe id="vnc" src="https://mac.thegridbase.com/vnc.html?resize=scale&show_dot=true&autoconnect=false&path=websockify" allow="clipboard-read; clipboard-write; microphone"></iframe>
+    <div class="bar">
+      <button class="btn" id="back" type="button" title="Back to Cockpit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Back
+      </button>
+      <button class="btn" id="kbd-toggle" type="button" title="Toggle keyboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/></svg>
+        Keyboard
+      </button>
+      <button class="btn" id="mic" type="button" title="Voice → keystroke">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+        Mic
+      </button>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="kbd" id="kbd">
+    <div class="kbd-row">
+      <button class="key" data-k="1">1</button>
+      <button class="key" data-k="2">2</button>
+      <button class="key" data-k="3">3</button>
+      <button class="key" data-k="4">4</button>
+      <button class="key" data-k="5">5</button>
+      <button class="key" data-k="6">6</button>
+      <button class="key" data-k="7">7</button>
+      <button class="key" data-k="8">8</button>
+      <button class="key" data-k="9">9</button>
+      <button class="key" data-k="0">0</button>
+      <button class="key wide" data-special="Backspace" data-keysym="0xff08">⌫</button>
+    </div>
+    <div class="kbd-row">
+      <button class="key" data-k="q">q</button>
+      <button class="key" data-k="w">w</button>
+      <button class="key" data-k="e">e</button>
+      <button class="key" data-k="r">r</button>
+      <button class="key" data-k="t">t</button>
+      <button class="key" data-k="y">y</button>
+      <button class="key" data-k="u">u</button>
+      <button class="key" data-k="i">i</button>
+      <button class="key" data-k="o">o</button>
+      <button class="key" data-k="p">p</button>
+    </div>
+    <div class="kbd-row">
+      <button class="key" data-k="a">a</button>
+      <button class="key" data-k="s">s</button>
+      <button class="key" data-k="d">d</button>
+      <button class="key" data-k="f">f</button>
+      <button class="key" data-k="g">g</button>
+      <button class="key" data-k="h">h</button>
+      <button class="key" data-k="j">j</button>
+      <button class="key" data-k="k">k</button>
+      <button class="key" data-k="l">l</button>
+      <button class="key wide tinted" data-special="Return" data-keysym="0xff0d">Enter</button>
+    </div>
+    <div class="kbd-row">
+      <button class="key wide" id="shift" data-special="Shift" data-keysym="0xffe1">Shift</button>
+      <button class="key" data-k="z">z</button>
+      <button class="key" data-k="x">x</button>
+      <button class="key" data-k="c">c</button>
+      <button class="key" data-k="v">v</button>
+      <button class="key" data-k="b">b</button>
+      <button class="key" data-k="n">n</button>
+      <button class="key" data-k="m">m</button>
+      <button class="key" data-k=",">,</button>
+      <button class="key" data-k=".">.</button>
+      <button class="key" data-k="@">@</button>
+    </div>
+    <div class="kbd-row">
+      <button class="key wide" data-k="-">-</button>
+      <button class="key wide" data-k="_">_</button>
+      <button class="key wide" data-k="/">/</button>
+      <button class="key x-wide" data-k=" ">space</button>
+      <button class="key wide" data-k=":">:</button>
+      <button class="key wide" data-k=";">;</button>
+      <button class="key wide" data-special="Tab" data-keysym="0xff09">Tab</button>
+      <button class="key wide" data-special="Escape" data-keysym="0xff1b">Esc</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const vnc = document.getElementById('vnc');
+const kbd = document.getElementById('kbd');
+const kbdToggle = document.getElementById('kbd-toggle');
+const back = document.getElementById('back');
+const micBtn = document.getElementById('mic');
+const shiftBtn = document.getElementById('shift');
+const toast = document.getElementById('toast');
+
+let shiftOn = false;
+
+function showToast(msg, kind='', duration=1800){
+  toast.textContent = msg;
+  toast.dataset.kind = kind;
+  toast.classList.add('on');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toast.classList.remove('on'), duration);
+}
+
+// keysym table — X11 keysym values for char codes
+function charToKeysym(ch){
+  if(ch === ' ') return 0x0020;
+  if(ch === '\n' || ch === '\r') return 0xff0d;
+  if(ch === '\t') return 0xff09;
+  const code = ch.charCodeAt(0);
+  // ASCII printable maps 1:1
+  if(code >= 0x20 && code <= 0x7e) return code;
+  // Latin-1 supplement
+  if(code >= 0xa0 && code <= 0xff) return code;
+  return null;
+}
+
+function getRFB(){
+  try {
+    // noVNC exposes UI on its window
+    const w = vnc.contentWindow;
+    if(w && w.UI && w.UI.rfb) return w.UI.rfb;
+  } catch(e){}
+  return null;
+}
+
+function sendKeyEvent(keysym, withShift=false){
+  const rfb = getRFB();
+  if(!rfb || typeof rfb.sendKey !== 'function'){
+    showToast('Not connected yet', 'err');
+    return false;
+  }
+  try {
+    if(withShift){
+      rfb.sendKey(0xffe1, 'ShiftLeft', true);
+    }
+    rfb.sendKey(keysym, undefined, true);
+    rfb.sendKey(keysym, undefined, false);
+    if(withShift){
+      rfb.sendKey(0xffe1, 'ShiftLeft', false);
+    }
+    return true;
+  } catch(err){
+    console.warn('sendKey failed', err);
+    showToast('Send failed', 'err');
+    return false;
+  }
+}
+
+function typeString(text){
+  const rfb = getRFB();
+  if(!rfb){
+    showToast('Not connected', 'err');
+    return;
+  }
+  let sent = 0;
+  for(const ch of text){
+    const upper = ch !== ch.toLowerCase() && ch === ch.toUpperCase();
+    const keysym = charToKeysym(ch.toLowerCase());
+    if(keysym !== null){
+      sendKeyEvent(keysym, upper);
+      sent++;
+    }
+  }
+  if(sent > 0) showToast(`Sent ${sent} chars`, 'ok', 1200);
+}
+
+// Keyboard panel toggle
+kbdToggle.addEventListener('click', () => {
+  const on = !kbd.classList.contains('on');
+  kbd.classList.toggle('on', on);
+  kbdToggle.dataset.on = on ? '1' : '0';
+});
+
+// Back button
+back.addEventListener('click', () => {
+  if(history.length > 1) history.back();
+  else location.href = '/';
+});
+
+// Shift toggle
+shiftBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  shiftOn = !shiftOn;
+  shiftBtn.classList.toggle('shift-active', shiftOn);
+});
+
+// Key buttons
+document.querySelectorAll('.key').forEach(btn => {
+  if(btn.id === 'shift') return;
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const special = btn.getAttribute('data-special');
+    const k = btn.getAttribute('data-k');
+    if(special){
+      const keysym = parseInt(btn.getAttribute('data-keysym'), 16);
+      sendKeyEvent(keysym, false);
+    } else if(k){
+      const keysym = charToKeysym(k);
+      const useShift = shiftOn && /^[a-z]$/.test(k);
+      sendKeyEvent(keysym, useShift);
+      // Auto-disable shift after one key (sticky-shift behavior)
+      if(shiftOn){
+        shiftOn = false;
+        shiftBtn.classList.remove('shift-active');
+      }
+    }
+  });
+});
+
+// Voice → keystroke
+let recog = null;
+let recogActive = false;
+function setupRecog(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ showToast('Voice not supported', 'err'); return null; }
+  const r = new SR();
+  r.lang = navigator.language || 'en-US';
+  r.interimResults = false;
+  r.maxAlternatives = 1;
+  r.continuous = false;
+  r.onresult = (ev) => {
+    const transcript = ev.results[0]?.[0]?.transcript || '';
+    if(transcript){
+      typeString(transcript);
+    }
+  };
+  r.onerror = (ev) => {
+    showToast('Mic: ' + ev.error, 'err');
+    recogActive = false;
+    micBtn.dataset.on = '0';
+  };
+  r.onend = () => {
+    recogActive = false;
+    micBtn.dataset.on = '0';
+  };
+  return r;
+}
+
+micBtn.addEventListener('click', () => {
+  if(!recog) recog = setupRecog();
+  if(!recog) return;
+  if(recogActive){
+    try { recog.stop(); } catch(_){}
+    recogActive = false;
+    micBtn.dataset.on = '0';
+    return;
+  }
+  try {
+    recog.start();
+    recogActive = true;
+    micBtn.dataset.on = '1';
+    showToast('Listening…', 'ok', 1500);
+  } catch(err){
+    showToast('Mic start failed', 'err');
+  }
+});
+
+// Wait for iframe to load and auto-connect
+vnc.addEventListener('load', () => {
+  // Try to inject connection trigger after a short delay
+  setTimeout(() => {
+    try {
+      const w = vnc.contentWindow;
+      if(w && w.UI && typeof w.UI.connect === 'function' && !w.UI.connected){
+        w.UI.connect();
+      }
+    } catch(_){}
+  }, 800);
+});
+
+// Status check
+setInterval(() => {
+  const rfb = getRFB();
+  if(rfb && rfb._rfbConnectionState === 'connected'){
+    document.title = 'Mac · Connected';
+  }
+}, 2000);
+
+window.__cockpitMac = { sendKeyEvent, typeString, getRFB };
+</script>
+
+</body>
+</html>

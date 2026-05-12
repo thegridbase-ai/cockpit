@@ -13,10 +13,10 @@
 :root{
   --bg:#0a0a0a;
   --fg:#f2f2f0;
-  --muted:rgba(242,242,240,0.45);
-  --muted-soft:rgba(242,242,240,0.22);
-  --border:rgba(255,255,255,0.08);
-  --border-strong:rgba(255,255,255,0.18);
+  --muted:rgba(242,242,240,0.72);
+  --muted-soft:rgba(242,242,240,0.4);
+  --border:rgba(255,255,255,0.18);
+  --border-strong:rgba(255,255,255,0.32);
   --ok:#7cf5b6;
   --font-display:'Space Grotesk',system-ui,sans-serif;
   --font-body:'Inter',system-ui,sans-serif;
@@ -53,18 +53,19 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
 .brand-block i{background:var(--fg);display:block}
 .brand-text{font-family:var(--font-mono);font-size:11px;letter-spacing:0.32em;text-transform:uppercase;color:var(--fg)}
 .brand-text small{display:block;color:var(--muted);margin-top:5px;letter-spacing:0.28em}
-.topbar-right{display:flex;align-items:center;gap:24px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:18px;font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:var(--fg)}
 .status{display:flex;align-items:center;gap:9px}
 .status-dot{width:6px;height:6px;border-radius:50%;background:#7cf5b6;box-shadow:0 0 8px rgba(124,245,182,0.6)}
 .clock{color:var(--fg);font-variant-numeric:tabular-nums;font-size:13px;letter-spacing:0.12em}
 
 .pill{
   display:inline-flex;align-items:center;gap:8px;
-  padding:7px 13px;border:1px solid var(--border);border-radius:999px;
-  font-family:var(--font-mono);font-size:9px;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted);
+  padding:8px 14px;border:1px solid var(--border-strong);border-radius:999px;
+  font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:0.24em;text-transform:uppercase;color:var(--fg);
+  background:rgba(255,255,255,0.04);
   cursor:pointer;transition:border-color 200ms ease, color 200ms ease, background 200ms ease;
 }
-.pill:hover{border-color:var(--border-strong);color:var(--fg)}
+.pill:hover{border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.08)}
 .pill[data-on="1"]{border-color:rgba(124,245,182,0.4);color:var(--ok)}
 .pill-dot{width:5px;height:5px;border-radius:50%;background:var(--muted-soft)}
 .pill[data-on="1"] .pill-dot{background:var(--ok);box-shadow:0 0 6px rgba(124,245,182,0.6)}
@@ -129,7 +130,7 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
 
 .foot{display:flex;align-items:center;justify-content:space-between;padding:14px 0 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted-soft)}
 .foot-left,.foot-right{display:flex;align-items:center;gap:18px}
-.foot-build{color:var(--muted-soft);letter-spacing:0.18em;text-transform:none}
+.foot-build{color:var(--fg);letter-spacing:0.18em;text-transform:none;font-weight:500;padding:4px 10px;border:1px solid var(--border-strong);border-radius:999px;background:rgba(255,255,255,0.05)}
 #refresh-btn svg{width:11px;height:11px}
 
 .modal-back{
@@ -333,7 +334,7 @@ const APPS = {
   crd:     { name:'Chrome Remote Desktop', tag:'Mac control', url:'https://remotedesktop.google.com/access' },
   maps:    { name:'Google Maps',           tag:'Navigate',    url:'https://maps.google.com/' },
   'google-signin': { name:'Google sign-in', tag:'Account', url:'https://accounts.google.com/' },
-  mac:     { name:'Mac',                   tag:'Remote desktop', url:'https://mac.thegridbase.com/?resize=scale&show_dot=true' }
+  mac:     { name:'Mac',                   tag:'Remote desktop', url:'https://mac.thegridbase.com/' }
 };
 
 const streamingEl = document.getElementById('streaming');

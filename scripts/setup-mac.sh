@@ -45,11 +45,19 @@ if [ ! -d "$NOVNC_PATH" ]; then
   mkdir -p "$(dirname "$NOVNC_PATH")"
   git clone --depth 1 https://github.com/novnc/noVNC.git "$NOVNC_PATH"
 fi
-# Land on vnc.html when visiting /
-if [ ! -e "$NOVNC_PATH/index.html" ] || [ -L "$NOVNC_PATH/index.html" ]; then
-  ln -sf vnc.html "$NOVNC_PATH/index.html"
+# Replace the index.html with our custom keyboard overlay
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CUSTOM_INDEX="$REPO_ROOT/novnc-custom/index.html"
+if [ -f "$CUSTOM_INDEX" ]; then
+  rm -f "$NOVNC_PATH/index.html"
+  cp "$CUSTOM_INDEX" "$NOVNC_PATH/index.html"
+  ok "noVNC custom keyboard overlay installed"
+else
+  if [ ! -e "$NOVNC_PATH/index.html" ] || [ -L "$NOVNC_PATH/index.html" ]; then
+    ln -sf vnc.html "$NOVNC_PATH/index.html"
+  fi
+  warn "custom overlay not found at $CUSTOM_INDEX — using default noVNC"
 fi
-ok "noVNC at $NOVNC_PATH"
 
 # ─── Cloudflare auth ──────────────────────────────────────────────────────────
 if [ ! -f "$HOME/.cloudflared/cert.pem" ]; then
