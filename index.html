@@ -130,7 +130,13 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
 
 .foot{display:flex;align-items:center;justify-content:space-between;padding:14px 0 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted-soft)}
 .foot-left,.foot-right{display:flex;align-items:center;gap:18px}
-.foot-build{color:var(--fg);letter-spacing:0.18em;text-transform:none;font-weight:500;padding:4px 10px;border:1px solid var(--border-strong);border-radius:999px;background:rgba(255,255,255,0.05)}
+.top-build{
+  font-family:var(--font-mono);font-size:10px;font-weight:500;
+  color:var(--muted);letter-spacing:0.14em;
+  padding:6px 11px;border:1px solid var(--border);border-radius:999px;
+  background:rgba(255,255,255,0.03);
+  white-space:nowrap;
+}
 #refresh-btn svg{width:11px;height:11px}
 
 .modal-back{
@@ -226,6 +232,7 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.36L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.36L3 16"/><path d="M3 21v-5h5"/></svg>
         <span>Refresh</span>
       </button>
+      <span class="top-build" title="Build timestamp · git commit">__BUILD__</span>
     </div>
   </header>
 
@@ -279,7 +286,7 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
   </div>
 
   <footer class="foot">
-    <div class="foot-left"><span>cockpit.thegridbase.com</span><span class="foot-build">build · __BUILD__</span></div>
+    <div class="foot-left"><span>cockpit.thegridbase.com</span></div>
     <div class="foot-right"><span id="foot-status">Phone &rarr; Screen</span></div>
   </footer>
 
