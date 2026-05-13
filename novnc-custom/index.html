@@ -5,72 +5,131 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0a">
 <meta name="referrer" content="no-referrer">
-<title>Mac · Cockpit</title>
+<title>Mac &middot; Cockpit</title>
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='6' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='6' y='18' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='18' width='8' height='8' fill='%23f2f2f0'/></svg>">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#0a0a0a;
+  --fg:#f2f2f0;
+  --muted:rgba(242,242,240,0.72);
+  --muted-soft:rgba(242,242,240,0.4);
+  --border:rgba(255,255,255,0.18);
+  --border-strong:rgba(255,255,255,0.32);
+  --ok:#7cf5b6;
+  --err:#f57c8f;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;width:100%;background:#0a0a0a;color:#f2f2f0;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;font-family:'JetBrains Mono',ui-monospace,monospace}
+html,body{height:100%;width:100%;background:var(--bg);color:var(--fg);overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;font-family:var(--font-body);-webkit-font-smoothing:antialiased}
 
 .wrap{display:flex;flex-direction:column;height:100vh}
-.screen{flex:1;position:relative;background:#000}
-.screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.screen{flex:1;position:relative;background:var(--bg)}
+.screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;opacity:0;transition:opacity 400ms ease}
+.screen.connected iframe{opacity:1}
 
 .bar{
-  position:absolute;top:10px;right:10px;z-index:10;
-  display:flex;gap:8px;
+  position:absolute;top:14px;left:14px;right:14px;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  pointer-events:none;
 }
-.btn{
-  padding:8px 14px;background:rgba(0,0,0,0.7);color:#f2f2f0;
-  border:1px solid rgba(255,255,255,0.35);border-radius:999px;
-  font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.18em;text-transform:uppercase;
-  cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-}
-.btn:hover{background:rgba(0,0,0,0.85);border-color:rgba(255,255,255,0.55)}
-.btn[data-on="1"]{background:#7cf5b6;color:#0a0a0a;border-color:#7cf5b6}
-.btn svg{width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px}
+.bar > *{pointer-events:auto}
 
-/* Keyboard panel */
+.brand{display:flex;align-items:center;gap:12px;padding:8px 14px;background:rgba(0,0,0,0.55);border:1px solid var(--border);border-radius:999px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.brand-block{display:grid;grid-template-columns:repeat(2,9px);grid-template-rows:repeat(2,9px);gap:1px;width:19px;height:19px}
+.brand-block i{background:var(--fg);display:block}
+.brand-text{font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:0.28em;text-transform:uppercase;color:var(--fg)}
+.brand-text small{display:block;color:var(--muted);margin-top:2px;letter-spacing:0.24em;font-size:9px}
+
+.actions{display:flex;gap:8px}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 14px;border:1px solid var(--border-strong);border-radius:999px;
+  font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:0.24em;text-transform:uppercase;color:var(--fg);
+  background:rgba(0,0,0,0.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  cursor:pointer;transition:background 200ms,border-color 200ms,color 200ms;
+}
+.pill:hover{background:rgba(0,0,0,0.8);border-color:rgba(255,255,255,0.5)}
+.pill[data-on="1"]{border-color:rgba(124,245,182,0.5);color:var(--ok);background:rgba(124,245,182,0.08)}
+.pill svg{width:12px;height:12px;display:block}
+
+.splash{
+  position:absolute;inset:0;z-index:10;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  background:var(--bg);
+  transition:opacity 400ms ease;
+}
+.splash::before{
+  content:"";position:absolute;inset:0;
+  background-image:radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size:32px 32px;
+  mask-image:radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 95%);
+  pointer-events:none;
+}
+.splash.hidden{opacity:0;pointer-events:none}
+.splash-brand{display:grid;grid-template-columns:repeat(2,24px);grid-template-rows:repeat(2,24px);gap:2px;width:50px;height:50px;position:relative;z-index:1}
+.splash-brand i{background:var(--fg);display:block;animation:pulse 1.4s ease-in-out infinite}
+.splash-brand i:nth-child(1){animation-delay:0s}
+.splash-brand i:nth-child(2){animation-delay:0.15s}
+.splash-brand i:nth-child(3){animation-delay:0.45s}
+.splash-brand i:nth-child(4){animation-delay:0.3s}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.splash-title{font-family:var(--font-display);font-weight:700;font-size:44px;letter-spacing:-0.025em;line-height:1;position:relative;z-index:1}
+.splash-title em{font-style:normal;font-weight:300;color:var(--muted)}
+.splash-status{font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:0.24em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+.splash-status[data-state="err"]{color:var(--err)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted-soft);animation:dotPulse 1s ease-in-out infinite}
+.splash-status[data-state="connecting"] .dot{background:var(--ok);box-shadow:0 0 8px rgba(124,245,182,0.5)}
+.splash-status[data-state="err"] .dot{background:var(--err);box-shadow:0 0 8px rgba(245,124,143,0.5);animation:none}
+@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.splash-hint{font-family:var(--font-mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted-soft);margin-top:8px;position:relative;z-index:1;max-width:380px;text-align:center;line-height:1.6}
+
 .kbd{
-  background:#0a0a0a;border-top:1px solid rgba(255,255,255,0.18);
-  padding:8px 8px 10px;
-  display:none;
-  flex-shrink:0;
+  background:var(--bg);border-top:1px solid var(--border);
+  padding:10px 10px 12px;
+  display:none;flex-shrink:0;
 }
 .kbd.on{display:block}
 .kbd-row{display:flex;gap:6px;justify-content:center;margin-bottom:6px}
 .kbd-row:last-child{margin-bottom:0}
 .key{
-  flex:1 1 0;min-width:0;max-width:64px;
-  height:42px;
-  background:rgba(255,255,255,0.06);
-  color:#f2f2f0;
-  border:1px solid rgba(255,255,255,0.18);border-radius:8px;
-  font:500 15px -apple-system,'JetBrains Mono',monospace;
+  flex:1 1 0;min-width:0;max-width:68px;height:44px;
+  background:rgba(255,255,255,0.06);color:var(--fg);
+  border:1px solid var(--border);border-radius:8px;
+  font:500 16px var(--font-body);
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:background 100ms,transform 50ms;
+  cursor:pointer;transition:background 100ms,transform 50ms,border-color 100ms;
 }
-.key:active{background:rgba(255,255,255,0.2);transform:scale(0.94)}
-.key.wide{flex-grow:1.5;max-width:none;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(242,242,240,0.85)}
-.key.x-wide{flex-grow:3;max-width:none;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(242,242,240,0.85)}
-.key.tinted{background:rgba(124,245,182,0.15);border-color:rgba(124,245,182,0.5);color:#7cf5b6}
+.key:active{background:rgba(255,255,255,0.2);transform:scale(0.94);border-color:var(--border-strong)}
+.key.wide{flex-grow:1.5;max-width:none;font-size:10px;font-family:var(--font-mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--muted)}
+.key.x-wide{flex-grow:3;max-width:none;font-size:10px;font-family:var(--font-mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--muted)}
+.key.tinted{background:rgba(124,245,182,0.15);border-color:rgba(124,245,182,0.5);color:var(--ok)}
 .key.tinted:active{background:rgba(124,245,182,0.3)}
-.key.danger{color:#f57c8f;border-color:rgba(245,124,143,0.4)}
-.key.shift-active{background:rgba(124,245,182,0.2);border-color:rgba(124,245,182,0.6)}
+.key.shift-active{background:rgba(124,245,182,0.2);border-color:rgba(124,245,182,0.6);color:var(--ok)}
 
 .toast{
-  position:absolute;left:50%;top:20px;transform:translateX(-50%);
-  padding:10px 16px;background:rgba(0,0,0,0.85);color:#f2f2f0;
-  border:1px solid rgba(255,255,255,0.3);border-radius:999px;
-  font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.18em;text-transform:uppercase;
-  display:none;z-index:20;backdrop-filter:blur(8px);
+  position:absolute;left:50%;top:80px;transform:translateX(-50%);
+  padding:10px 16px;background:rgba(0,0,0,0.85);color:var(--fg);
+  border:1px solid var(--border-strong);border-radius:999px;
+  font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;
+  display:none;z-index:30;backdrop-filter:blur(12px);
 }
 .toast.on{display:block;animation:toastIn 200ms ease}
-.toast[data-kind="err"]{color:#f57c8f;border-color:rgba(245,124,143,0.5)}
-.toast[data-kind="ok"]{color:#7cf5b6;border-color:rgba(124,245,182,0.5)}
+.toast[data-kind="err"]{color:var(--err);border-color:rgba(245,124,143,0.5)}
+.toast[data-kind="ok"]{color:var(--ok);border-color:rgba(124,245,182,0.5)}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
 
 @media (max-width:900px){
+  .bar{top:10px;left:10px;right:10px}
+  .brand-text{display:none}
+  .pill{padding:7px 11px;font-size:9px;letter-spacing:0.2em}
+  .splash-title{font-size:32px}
   .key{height:38px;font-size:14px;max-width:none}
   .kbd{padding:6px 4px 8px}
   .kbd-row{gap:4px;margin-bottom:4px}
@@ -80,22 +139,40 @@ html,body{height:100%;width:100%;background:#0a0a0a;color:#f2f2f0;overflow:hidde
 <body>
 
 <div class="wrap">
-  <div class="screen">
-    <iframe id="vnc" src="https://mac.thegridbase.com/vnc.html?resize=scale&show_dot=true&autoconnect=false&path=websockify" allow="clipboard-read; clipboard-write; microphone"></iframe>
+  <div class="screen" id="screen">
+    <iframe id="vnc" src="/vnc.html?resize=scale&show_dot=true&autoconnect=true" allow="clipboard-read; clipboard-write; microphone"></iframe>
+
     <div class="bar">
-      <button class="btn" id="back" type="button" title="Back to Cockpit">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-        Back
-      </button>
-      <button class="btn" id="kbd-toggle" type="button" title="Toggle keyboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/></svg>
-        Keyboard
-      </button>
-      <button class="btn" id="mic" type="button" title="Voice → keystroke">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
-        Mic
-      </button>
+      <div class="brand">
+        <div class="brand-block" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="brand-text">Cockpit<small>mac</small></div>
+      </div>
+      <div class="actions">
+        <button class="pill" id="back" type="button" title="Back to Cockpit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          <span>Back</span>
+        </button>
+        <button class="pill" id="kbd-toggle" type="button" title="Toggle on-screen keyboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/></svg>
+          <span>Keyboard</span>
+        </button>
+        <button class="pill" id="mic" type="button" title="Voice dictation into Mac">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+          <span>Mic</span>
+        </button>
+      </div>
     </div>
+
+    <div class="splash" id="splash">
+      <div class="splash-brand" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <h1 class="splash-title">Cockpit <em>&middot; Mac</em></h1>
+      <div class="splash-status" id="status" data-state="connecting">
+        <span class="dot"></span>
+        <span id="status-text">Connecting to Mac&hellip;</span>
+      </div>
+      <div class="splash-hint">Self-hosted remote desktop &middot; Cloudflare Tunnel &middot; noVNC</div>
+    </div>
+
     <div class="toast" id="toast"></div>
   </div>
 
@@ -111,7 +188,7 @@ html,body{height:100%;width:100%;background:#0a0a0a;color:#f2f2f0;overflow:hidde
       <button class="key" data-k="8">8</button>
       <button class="key" data-k="9">9</button>
       <button class="key" data-k="0">0</button>
-      <button class="key wide" data-special="Backspace" data-keysym="0xff08">⌫</button>
+      <button class="key wide" data-special="Backspace" data-keysym="0xff08">&#8592;</button>
     </div>
     <div class="kbd-row">
       <button class="key" data-k="q">q</button>
@@ -165,6 +242,10 @@ html,body{height:100%;width:100%;background:#0a0a0a;color:#f2f2f0;overflow:hidde
 
 <script>
 const vnc = document.getElementById('vnc');
+const screen_ = document.getElementById('screen');
+const splash = document.getElementById('splash');
+const status = document.getElementById('status');
+const statusText = document.getElementById('status-text');
 const kbd = document.getElementById('kbd');
 const kbdToggle = document.getElementById('kbd-toggle');
 const back = document.getElementById('back');
@@ -173,6 +254,7 @@ const shiftBtn = document.getElementById('shift');
 const toast = document.getElementById('toast');
 
 let shiftOn = false;
+let connected = false;
 
 function showToast(msg, kind='', duration=1800){
   toast.textContent = msg;
@@ -182,22 +264,23 @@ function showToast(msg, kind='', duration=1800){
   showToast._t = setTimeout(() => toast.classList.remove('on'), duration);
 }
 
-// keysym table — X11 keysym values for char codes
+function setStatus(text, state='connecting'){
+  statusText.textContent = text;
+  status.dataset.state = state;
+}
+
 function charToKeysym(ch){
   if(ch === ' ') return 0x0020;
   if(ch === '\n' || ch === '\r') return 0xff0d;
   if(ch === '\t') return 0xff09;
   const code = ch.charCodeAt(0);
-  // ASCII printable maps 1:1
   if(code >= 0x20 && code <= 0x7e) return code;
-  // Latin-1 supplement
   if(code >= 0xa0 && code <= 0xff) return code;
   return null;
 }
 
 function getRFB(){
   try {
-    // noVNC exposes UI on its window
     const w = vnc.contentWindow;
     if(w && w.UI && w.UI.rfb) return w.UI.rfb;
   } catch(e){}
@@ -211,17 +294,12 @@ function sendKeyEvent(keysym, withShift=false){
     return false;
   }
   try {
-    if(withShift){
-      rfb.sendKey(0xffe1, 'ShiftLeft', true);
-    }
+    if(withShift) rfb.sendKey(0xffe1, 'ShiftLeft', true);
     rfb.sendKey(keysym, undefined, true);
     rfb.sendKey(keysym, undefined, false);
-    if(withShift){
-      rfb.sendKey(0xffe1, 'ShiftLeft', false);
-    }
+    if(withShift) rfb.sendKey(0xffe1, 'ShiftLeft', false);
     return true;
   } catch(err){
-    console.warn('sendKey failed', err);
     showToast('Send failed', 'err');
     return false;
   }
@@ -229,48 +307,74 @@ function sendKeyEvent(keysym, withShift=false){
 
 function typeString(text){
   const rfb = getRFB();
-  if(!rfb){
-    showToast('Not connected', 'err');
-    return;
-  }
+  if(!rfb){ showToast('Not connected', 'err'); return; }
   let sent = 0;
   for(const ch of text){
     const upper = ch !== ch.toLowerCase() && ch === ch.toUpperCase();
     const keysym = charToKeysym(ch.toLowerCase());
-    if(keysym !== null){
-      sendKeyEvent(keysym, upper);
-      sent++;
-    }
+    if(keysym !== null){ sendKeyEvent(keysym, upper); sent++; }
   }
   if(sent > 0) showToast(`Sent ${sent} chars`, 'ok', 1200);
 }
 
-// Keyboard panel toggle
+function styleIframe(){
+  try {
+    const doc = vnc.contentDocument;
+    if(!doc) return;
+    if(doc.getElementById('cockpit-style')) return;
+    const style = doc.createElement('style');
+    style.id = 'cockpit-style';
+    style.textContent = `
+      #noVNC_control_bar_anchor, #noVNC_control_bar, #noVNC_status, #noVNC_logo, #noVNC_center { display:none !important; }
+      #noVNC_transition { background:#0a0a0a !important; }
+      #noVNC_transition_text { color:#f2f2f0 !important; font-family:'JetBrains Mono',monospace !important; font-size:11px !important; letter-spacing:0.18em !important; text-transform:uppercase !important; }
+      .noVNC_spinner { border-color:#7cf5b6 transparent transparent !important; }
+      body, #noVNC_container, #noVNC_screen, #noVNC_canvas { background:#0a0a0a !important; }
+      #noVNC_credentials_dlg {
+        background:#0e0e0e !important; border:1px solid rgba(255,255,255,0.32) !important; border-radius:14px !important;
+        box-shadow:0 20px 60px rgba(0,0,0,0.6) !important;
+        font-family:'Inter',system-ui,sans-serif !important;
+      }
+      #noVNC_credentials_dlg > .noVNC_panel_caption { background:transparent !important; color:#f2f2f0 !important; font-family:'Space Grotesk',sans-serif !important; font-weight:600 !important; font-size:18px !important; padding:18px 22px 6px !important; border:0 !important; }
+      #noVNC_credentials_dlg .noVNC_form_label { color:rgba(242,242,240,0.72) !important; font-family:'JetBrains Mono',monospace !important; font-size:10px !important; letter-spacing:0.24em !important; text-transform:uppercase !important; }
+      #noVNC_credentials_dlg input { background:rgba(255,255,255,0.05) !important; border:1px solid rgba(255,255,255,0.18) !important; color:#f2f2f0 !important; border-radius:8px !important; padding:12px 14px !important; font-family:'JetBrains Mono',monospace !important; font-size:14px !important; }
+      #noVNC_credentials_dlg input:focus { border-color:rgba(255,255,255,0.4) !important; outline:none !important; background:rgba(255,255,255,0.08) !important; }
+      #noVNC_credentials_dlg input[type=button], #noVNC_credentials_dlg #noVNC_credentials_button {
+        background:#f2f2f0 !important; color:#0a0a0a !important; border:0 !important; border-radius:8px !important;
+        font-family:'Space Grotesk',sans-serif !important; font-weight:600 !important; font-size:14px !important;
+        padding:12px 22px !important; cursor:pointer !important; letter-spacing:0.04em !important; margin-top:12px !important;
+      }
+    `;
+    doc.head.appendChild(style);
+  } catch(err){}
+}
+
 kbdToggle.addEventListener('click', () => {
   const on = !kbd.classList.contains('on');
   kbd.classList.toggle('on', on);
   kbdToggle.dataset.on = on ? '1' : '0';
 });
 
-// Back button
 back.addEventListener('click', () => {
-  if(history.length > 1) history.back();
-  else location.href = '/';
+  if(document.referrer && document.referrer.includes('cockpit.thegridbase.com')){
+    location.href = 'https://cockpit.thegridbase.com/';
+  } else if(history.length > 1) {
+    history.back();
+  } else {
+    location.href = 'https://cockpit.thegridbase.com/';
+  }
 });
 
-// Shift toggle
 shiftBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   shiftOn = !shiftOn;
   shiftBtn.classList.toggle('shift-active', shiftOn);
 });
 
-// Key buttons
 document.querySelectorAll('.key').forEach(btn => {
   if(btn.id === 'shift') return;
   btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     const special = btn.getAttribute('data-special');
     const k = btn.getAttribute('data-k');
     if(special){
@@ -280,18 +384,12 @@ document.querySelectorAll('.key').forEach(btn => {
       const keysym = charToKeysym(k);
       const useShift = shiftOn && /^[a-z]$/.test(k);
       sendKeyEvent(keysym, useShift);
-      // Auto-disable shift after one key (sticky-shift behavior)
-      if(shiftOn){
-        shiftOn = false;
-        shiftBtn.classList.remove('shift-active');
-      }
+      if(shiftOn){ shiftOn = false; shiftBtn.classList.remove('shift-active'); }
     }
   });
 });
 
-// Voice → keystroke
-let recog = null;
-let recogActive = false;
+let recog = null, recogActive = false;
 function setupRecog(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){ showToast('Voice not supported', 'err'); return null; }
@@ -302,44 +400,53 @@ function setupRecog(){
   r.continuous = false;
   r.onresult = (ev) => {
     const transcript = ev.results[0]?.[0]?.transcript || '';
-    if(transcript){
-      typeString(transcript);
-    }
+    if(transcript) typeString(transcript);
   };
   r.onerror = (ev) => {
     showToast('Mic: ' + ev.error, 'err');
-    recogActive = false;
-    micBtn.dataset.on = '0';
+    recogActive = false; micBtn.dataset.on = '0';
   };
-  r.onend = () => {
-    recogActive = false;
-    micBtn.dataset.on = '0';
-  };
+  r.onend = () => { recogActive = false; micBtn.dataset.on = '0'; };
   return r;
 }
-
 micBtn.addEventListener('click', () => {
   if(!recog) recog = setupRecog();
   if(!recog) return;
-  if(recogActive){
-    try { recog.stop(); } catch(_){}
-    recogActive = false;
-    micBtn.dataset.on = '0';
-    return;
-  }
-  try {
-    recog.start();
-    recogActive = true;
-    micBtn.dataset.on = '1';
-    showToast('Listening…', 'ok', 1500);
-  } catch(err){
-    showToast('Mic start failed', 'err');
-  }
+  if(recogActive){ try { recog.stop(); } catch(_){} recogActive = false; micBtn.dataset.on = '0'; return; }
+  try { recog.start(); recogActive = true; micBtn.dataset.on = '1'; showToast('Listening…', 'ok', 1500); }
+  catch(err){ showToast('Mic start failed', 'err'); }
 });
 
-// Wait for iframe to load and auto-connect
+let pollCount = 0;
+function pollConnection(){
+  pollCount++;
+  styleIframe();
+  const rfb = getRFB();
+  if(rfb){
+    const state = rfb._rfbConnectionState;
+    if(state === 'connected'){
+      if(!connected){
+        connected = true;
+        splash.classList.add('hidden');
+        screen_.classList.add('connected');
+        document.title = 'Mac · Connected';
+      }
+    } else if(state === 'disconnected' && pollCount > 8){
+      setStatus('Disconnected — refresh to retry', 'err');
+    } else if(state === 'connecting'){
+      setStatus('Connecting to Mac…', 'connecting');
+    } else if(state === 'securityresult' || state === 'authenticating'){
+      setStatus('Authentication required', 'connecting');
+    }
+  } else if(pollCount > 4){
+    setStatus('Loading noVNC…', 'connecting');
+  }
+}
+setInterval(pollConnection, 600);
+
 vnc.addEventListener('load', () => {
-  // Try to inject connection trigger after a short delay
+  styleIframe();
+  setTimeout(styleIframe, 200);
   setTimeout(() => {
     try {
       const w = vnc.contentWindow;
@@ -347,18 +454,10 @@ vnc.addEventListener('load', () => {
         w.UI.connect();
       }
     } catch(_){}
-  }, 800);
+  }, 400);
 });
 
-// Status check
-setInterval(() => {
-  const rfb = getRFB();
-  if(rfb && rfb._rfbConnectionState === 'connected'){
-    document.title = 'Mac · Connected';
-  }
-}, 2000);
-
-window.__cockpitMac = { sendKeyEvent, typeString, getRFB };
+window.__cockpitMac = { sendKeyEvent, typeString, getRFB, styleIframe };
 </script>
 
 </body>
