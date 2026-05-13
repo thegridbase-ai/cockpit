@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a0a0a">
+<title>Set up Mac remote &middot; Cockpit</title>
+<meta name="description" content="Step-by-step setup for the Mac remote desktop feature in Cockpit. Cloudflare Tunnel + noVNC, free.">
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='6' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='6' y='18' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='18' width='8' height='8' fill='%23f2f2f0'/></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#f2f2f0;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.65;padding:48px 24px 80px}
+.wrap{max-width:780px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:48px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,0.18)}
+.brand-block{display:grid;grid-template-columns:repeat(2,16px);grid-template-rows:repeat(2,16px);gap:1px;width:33px;height:33px}
+.brand-block i{background:#f2f2f0;display:block}
+.brand-text{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.32em;text-transform:uppercase}
+.brand-text small{display:block;color:rgba(242,242,240,0.55);margin-top:4px;letter-spacing:0.28em}
+h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:48px;letter-spacing:-0.03em;margin-bottom:8px;line-height:1}
+.lead{font-size:17px;color:rgba(242,242,240,0.78);margin-bottom:40px;max-width:600px}
+h2{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;letter-spacing:-0.01em;margin-top:48px;margin-bottom:14px;color:#f2f2f0;display:flex;align-items:center;gap:14px}
+.step-num{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1px solid rgba(124,245,182,0.5);color:#7cf5b6;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600}
+h3{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:16px;margin-top:22px;margin-bottom:10px;color:#f2f2f0}
+p{color:rgba(242,242,240,0.78);margin-bottom:12px;font-size:15px}
+ul,ol{margin:0 0 14px 0;padding-left:22px;color:rgba(242,242,240,0.78);font-size:15px}
+li{margin-bottom:8px}
+a{color:#7cf5b6;text-decoration:none;border-bottom:1px solid rgba(124,245,182,0.3)}
+a:hover{border-bottom-color:#7cf5b6}
+code{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;color:#f2f2f0}
+pre{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:14px 16px;overflow-x:auto;margin-bottom:14px;color:#f2f2f0;line-height:1.6}
+pre code{background:transparent;padding:0;border-radius:0}
+.note{border-left:2px solid rgba(124,245,182,0.5);padding:6px 0 6px 16px;margin:14px 0;color:rgba(242,242,240,0.7);font-size:14px}
+.warn{border-left:2px solid rgba(245,182,124,0.5);padding:6px 0 6px 16px;margin:14px 0;color:rgba(242,242,240,0.7);font-size:14px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-top:48px;padding:10px 16px;border:1px solid rgba(255,255,255,0.32);border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#f2f2f0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="brand">
+  <div class="brand-block" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="brand-text">Cockpit<small>setup</small></div>
+</header>
+
+<h1>Reach your Mac from your car</h1>
+<p class="lead">Cloudflare Tunnel + noVNC, on your own Mac. No port forwarding, no proxy. Takes about 10 minutes. Free.</p>
+
+<h2><span class="step-num">1</span>What you need</h2>
+<ul>
+  <li>A Mac running <strong>macOS Sonoma 14+</strong></li>
+  <li><a href="https://brew.sh">Homebrew</a> installed</li>
+  <li>A Cloudflare account with a domain you control (free tier is fine)</li>
+  <li>Your Mac stays awake when you want to connect &mdash; either disable sleep or wake-on-network</li>
+</ul>
+
+<h2><span class="step-num">2</span>Run the setup script</h2>
+<pre><code>git clone https://github.com/cankilic-gh/cockpit.git
+cd cockpit
+bash scripts/setup-mac.sh</code></pre>
+<p>The script installs <code>cloudflared</code>, <code>websockify</code>, and <code>noVNC</code>; creates a Cloudflare Tunnel; routes a subdomain you pick to it; and registers both processes as launchd services so they survive reboots.</p>
+<p>Open <code>scripts/setup-mac.sh</code> and change the <code>DOMAIN</code> variable to your own subdomain (e.g. <code>mac.example.com</code>) before running.</p>
+<div class="note">The script will open your browser once to log into Cloudflare. Pick the zone that matches your subdomain.</div>
+
+<h2><span class="step-num">3</span>Turn on macOS Screen Sharing</h2>
+<ol>
+  <li>System Settings &rarr; General &rarr; Sharing &rarr; <strong>Screen Sharing</strong> ON</li>
+  <li>Click the &#8505; next to Screen Sharing &rarr; &ldquo;Allow access for: Only these users&rdquo;</li>
+  <li>Add your user account</li>
+  <li>Lock Screen &rarr; &ldquo;Turn display off when inactive&rdquo; &rarr; <strong>Never</strong> (or use <code>caffeinate -d</code> when connecting)</li>
+</ol>
+
+<h2><span class="step-num">4</span>Add a Google login wall (recommended, free)</h2>
+<p>Without this, anyone who finds your subdomain can reach the VNC password prompt. With Cloudflare Access, only the Google account you allow can even see the page.</p>
+<ol>
+  <li>Open <a href="https://one.dash.cloudflare.com">Cloudflare Zero Trust</a> and pick a team name (e.g. your initials)</li>
+  <li>Access Controls &rarr; Identity providers &rarr; <strong>Add new</strong> &rarr; <strong>Google</strong> &rarr; leave Client ID/Secret blank &rarr; Save</li>
+  <li>Access Controls &rarr; Applications &rarr; <strong>Add an application</strong> &rarr; <strong>Self-hosted</strong></li>
+  <li>Name it, set subdomain to your <code>mac</code> subdomain, identity provider Google</li>
+  <li>Add a policy: action <strong>Allow</strong>, Include &rarr; Emails &rarr; your Gmail address</li>
+</ol>
+
+<h2><span class="step-num">5</span>Test</h2>
+<p>Open <code>https://your-subdomain.example.com</code> on your laptop first.</p>
+<ol>
+  <li>Cloudflare Access prompts for Google login &mdash; sign in with your allowed email</li>
+  <li>noVNC loads. Click Connect</li>
+  <li>Enter your Mac login user and password (ARD authentication)</li>
+  <li>You see your Mac&rsquo;s screen</li>
+</ol>
+<p>Then open the same URL from your car&rsquo;s browser. Bookmark it.</p>
+<div class="warn">For a self-hosted Cockpit launcher pointing at your own Mac, fork this repo, edit the <code>mac</code> URL in <code>index.html</code> to your subdomain, and deploy to Vercel.</div>
+
+<h2>Troubleshooting</h2>
+<h3>&ldquo;Error 1033&rdquo; / &ldquo;Tunnel has no active connection&rdquo;</h3>
+<p>The cloudflared service ran without arguments. Re-run <code>bash scripts/setup-mac.sh</code> &mdash; it patches the launchd plist (a known bug in <code>cloudflared 2026.3</code> service install).</p>
+
+<h3>VNC connects but only the top-left of the screen appears</h3>
+<p>Add <code>?resize=scale</code> to the URL, or use the noVNC settings panel to change <em>Scaling mode</em> to <strong>Local Scaling</strong>.</p>
+
+<h3>Can&rsquo;t type the password on Tesla</h3>
+<p>Tesla&rsquo;s on-screen keyboard cannot send keystrokes into VNC. The Cockpit launcher you visit from <a href="/">cockpit.thegridbase.com</a> includes a custom keyboard overlay built for this case. Use that, not Tesla&rsquo;s.</p>
+
+<h3>Voice dictation does nothing</h3>
+<p>Your browser must grant microphone permission. On Tesla, allow microphone for the noVNC origin in browser settings.</p>
+
+<h2>Uninstall</h2>
+<pre><code>sudo cloudflared service uninstall
+launchctl unload ~/Library/LaunchAgents/com.cockpit.websockify.plist
+rm -rf ~/.cockpit-mac/novnc ~/Library/LaunchAgents/com.cockpit.websockify.plist ~/.cloudflared</code></pre>
+
+<a class="back" href="/">&larr; Back to Cockpit</a>
+</div>
+</body>
+</html>

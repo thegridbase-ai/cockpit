@@ -10,8 +10,9 @@
 
 set -euo pipefail
 
-DOMAIN="mac.thegridbase.com"
-TUNNEL_NAME="cockpit-mac"
+# Override with: DOMAIN=mac.yourdomain.com bash scripts/setup-mac.sh
+DOMAIN="${DOMAIN:-mac.thegridbase.com}"
+TUNNEL_NAME="${TUNNEL_NAME:-cockpit-mac}"
 NOVNC_PATH="$HOME/.cockpit-mac/novnc"
 WEBSOCKIFY_PORT=6080
 VNC_PORT=5900

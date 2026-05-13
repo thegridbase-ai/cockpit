@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="robots" content="noindex">
+<title>Privacy &middot; Cockpit</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='6' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='6' width='8' height='8' fill='%23f2f2f0'/><rect x='6' y='18' width='8' height='8' fill='%23f2f2f0'/><rect x='18' y='18' width='8' height='8' fill='%23f2f2f0'/></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#f2f2f0;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.65;padding:48px 24px 80px}
+.wrap{max-width:720px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:48px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,0.18)}
+.brand-block{display:grid;grid-template-columns:repeat(2,16px);grid-template-rows:repeat(2,16px);gap:1px;width:33px;height:33px}
+.brand-block i{background:#f2f2f0;display:block}
+.brand-text{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.32em;text-transform:uppercase}
+.brand-text small{display:block;color:rgba(242,242,240,0.55);margin-top:4px;letter-spacing:0.28em}
+h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:48px;letter-spacing:-0.03em;margin-bottom:8px}
+.updated{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(242,242,240,0.55);margin-bottom:40px}
+h2{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;letter-spacing:-0.01em;margin-top:36px;margin-bottom:14px;color:#f2f2f0}
+p{color:rgba(242,242,240,0.78);margin-bottom:14px;font-size:15px}
+ul{margin:0 0 14px 0;padding-left:22px;color:rgba(242,242,240,0.78);font-size:15px}
+li{margin-bottom:8px}
+a{color:#7cf5b6;text-decoration:none;border-bottom:1px solid rgba(124,245,182,0.3)}
+a:hover{border-bottom-color:#7cf5b6}
+code{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;color:#f2f2f0}
+.back{display:inline-flex;align-items:center;gap:8px;margin-top:48px;padding:10px 16px;border:1px solid rgba(255,255,255,0.32);border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#f2f2f0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="brand">
+  <div class="brand-block" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="brand-text">Cockpit<small>privacy</small></div>
+</header>
+
+<h1>Privacy</h1>
+<p class="updated">Last updated 2026-05-13</p>
+
+<p>Cockpit is a static web application. We do not collect, store, or process personal data on our servers.</p>
+
+<h2>What we never collect</h2>
+<ul>
+  <li>No user accounts, no email addresses, no passwords</li>
+  <li>No analytics or tracking scripts on the launcher pages</li>
+  <li>No cookies set by Cockpit itself</li>
+  <li>No streaming-service credentials &mdash; Cockpit only opens URLs in your browser</li>
+</ul>
+
+<h2>What may briefly exist</h2>
+<p>When you use phone pairing, your phone writes a single URL to an ephemeral session in Google Firebase Realtime Database, identified by a short random key. The car browser reads it and the session is removed. The payload is the URL only.</p>
+<p>Firebase server logs are governed by <a href="https://firebase.google.com/terms/data-processing-terms">Google&rsquo;s Firebase Data Processing Terms</a>.</p>
+
+<h2>Third-party services you interact with</h2>
+<ul>
+  <li><strong>Vercel</strong> hosts these pages and may keep standard request logs per its <a href="https://vercel.com/legal/privacy-policy">privacy policy</a></li>
+  <li><strong>Cloudflare</strong> serves DNS and (in the Mac remote desktop flow) tunnels your own traffic; see <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare&rsquo;s privacy policy</a></li>
+  <li><strong>Streaming services</strong> (Netflix, YouTube, Disney+, Max, Apple TV+) open in their own web apps under their own terms</li>
+</ul>
+
+<h2>Mac remote desktop</h2>
+<p>The Mac remote desktop runs on your own Cloudflare Tunnel and your own Mac. Nothing routes through Cockpit-controlled servers. We never see your screen, your input, or your credentials.</p>
+
+<h2>Your rights</h2>
+<p>Under GDPR, CCPA, and similar laws you have the right to access, correct, or delete personal data held about you. Because we hold none, there is nothing to access, correct, or delete on our side. For questions email <a href="mailto:admin@thegridbase.com">admin@thegridbase.com</a>.</p>
+
+<h2>Contact</h2>
+<p><a href="mailto:admin@thegridbase.com">admin@thegridbase.com</a></p>
+
+<a class="back" href="/">&larr; Back to Cockpit</a>
+</div>
+</body>
+</html>
