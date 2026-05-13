@@ -89,6 +89,15 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--fg);overflow:h
 @keyframes dotPulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
 .splash-hint{font-family:var(--font-mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted-soft);margin-top:8px;position:relative;z-index:1;max-width:380px;text-align:center;line-height:1.6}
+.splash-action{
+  position:relative;z-index:1;margin-top:8px;
+  padding:13px 28px;background:var(--fg);color:var(--bg);
+  border:0;border-radius:8px;
+  font-family:var(--font-display);font-weight:600;font-size:14px;letter-spacing:0.04em;
+  cursor:pointer;transition:opacity 200ms,transform 80ms;
+}
+.splash-action:hover{opacity:0.9}
+.splash-action:active{transform:scale(0.97)}
 
 .kbd{
   background:var(--bg);border-top:1px solid var(--border);
@@ -170,6 +179,7 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--fg);overflow:h
         <span class="dot"></span>
         <span id="status-text">Connecting to Mac&hellip;</span>
       </div>
+      <button class="splash-action" id="reconnect" type="button" style="display:none">Reconnect</button>
       <div class="splash-hint">Self-hosted remote desktop &middot; Cloudflare Tunnel &middot; noVNC</div>
     </div>
 
@@ -252,6 +262,11 @@ const back = document.getElementById('back');
 const micBtn = document.getElementById('mic');
 const shiftBtn = document.getElementById('shift');
 const toast = document.getElementById('toast');
+const reconnectBtn = document.getElementById('reconnect');
+
+reconnectBtn.addEventListener('click', () => {
+  location.reload();
+});
 
 let shiftOn = false;
 let connected = false;
@@ -325,27 +340,135 @@ function styleIframe(){
     const style = doc.createElement('style');
     style.id = 'cockpit-style';
     style.textContent = `
-      #noVNC_control_bar_anchor, #noVNC_control_bar, #noVNC_status, #noVNC_logo, #noVNC_center { display:none !important; }
+      /* Base canvas */
+      html,body, #noVNC_container, #noVNC_screen, #noVNC_canvas { background:#0a0a0a !important; }
+
+      /* Big yellow noVNC logo on disconnect/load — hide entirely */
+      #noVNC_logo, #noVNC_center, #noVNC_status { display:none !important; }
+
+      /* Default "Connect" landing button — hide; we autoconnect */
+      #noVNC_connect_dlg { display:none !important; }
+      #noVNC_connect_button {
+        background:#f2f2f0 !important; color:#0a0a0a !important; border:0 !important;
+        border-radius:8px !important; font-family:'Space Grotesk',sans-serif !important;
+        font-weight:600 !important; font-size:14px !important; padding:12px 24px !important;
+        letter-spacing:0.04em !important; cursor:pointer !important; box-shadow:none !important;
+      }
+      #noVNC_connect_button div, #noVNC_connect_button img { display:none !important; }
+      #noVNC_connect_button::before { content:"Connect to Mac"; }
+
+      /* Transition spinner */
       #noVNC_transition { background:#0a0a0a !important; }
       #noVNC_transition_text { color:#f2f2f0 !important; font-family:'JetBrains Mono',monospace !important; font-size:11px !important; letter-spacing:0.18em !important; text-transform:uppercase !important; }
       .noVNC_spinner { border-color:#7cf5b6 transparent transparent !important; }
-      body, #noVNC_container, #noVNC_screen, #noVNC_canvas { background:#0a0a0a !important; }
+
+      /* Sidebar (control bar) — keep available but Cockpit-stylize */
+      #noVNC_control_bar_anchor { z-index:5 !important; }
+      #noVNC_control_bar {
+        background:rgba(14,14,14,0.92) !important;
+        border:1px solid rgba(255,255,255,0.18) !important;
+        border-left:none !important;
+        border-radius:0 12px 12px 0 !important;
+        backdrop-filter:blur(12px) !important; -webkit-backdrop-filter:blur(12px) !important;
+        box-shadow:0 6px 20px rgba(0,0,0,0.4) !important;
+      }
+      #noVNC_control_bar .noVNC_button {
+        color:rgba(242,242,240,0.72) !important;
+        background:transparent !important; border:0 !important;
+        margin:4px !important; border-radius:8px !important;
+        transition:background 150ms, color 150ms !important;
+      }
+      #noVNC_control_bar .noVNC_button:hover { color:#f2f2f0 !important; background:rgba(255,255,255,0.06) !important; }
+      #noVNC_control_bar .noVNC_button.noVNC_selected { color:#7cf5b6 !important; background:rgba(124,245,182,0.08) !important; }
+      #noVNC_control_bar_handle {
+        background:rgba(14,14,14,0.92) !important;
+        border:1px solid rgba(255,255,255,0.18) !important; border-left:none !important;
+        border-radius:0 6px 6px 0 !important;
+      }
+      #noVNC_control_bar_handle::after {
+        background:rgba(242,242,240,0.4) !important;
+      }
+
+      /* Settings + clipboard panels */
+      #noVNC_settings, #noVNC_clipboard, #noVNC_extra_keys, #noVNC_xvp, #noVNC_power {
+        background:rgba(14,14,14,0.96) !important;
+        border:1px solid rgba(255,255,255,0.18) !important;
+        border-radius:12px !important;
+        color:#f2f2f0 !important;
+        font-family:'Inter',system-ui,sans-serif !important;
+        backdrop-filter:blur(12px) !important;
+      }
+      #noVNC_settings ul li, #noVNC_settings label { color:rgba(242,242,240,0.85) !important; font-size:13px !important; }
+      #noVNC_settings input[type=text], #noVNC_settings select, #noVNC_clipboard_text {
+        background:rgba(255,255,255,0.05) !important; border:1px solid rgba(255,255,255,0.18) !important;
+        color:#f2f2f0 !important; border-radius:6px !important; padding:6px 10px !important;
+        font-family:'JetBrains Mono',monospace !important; font-size:12px !important;
+      }
+      #noVNC_settings input[type=checkbox] { accent-color:#7cf5b6 !important; }
+      #noVNC_settings hr { border-color:rgba(255,255,255,0.12) !important; }
+      #noVNC_settings_button_apply, #noVNC_settings_button_logout {
+        background:#f2f2f0 !important; color:#0a0a0a !important; border:0 !important;
+        border-radius:6px !important; font-family:'Space Grotesk',sans-serif !important;
+        font-weight:600 !important; padding:8px 14px !important; cursor:pointer !important;
+      }
+
+      /* Credentials dialog — full Cockpit makeover */
       #noVNC_credentials_dlg {
-        background:#0e0e0e !important; border:1px solid rgba(255,255,255,0.32) !important; border-radius:14px !important;
+        background:#0e0e0e !important;
+        border:1px solid rgba(255,255,255,0.32) !important;
+        border-radius:14px !important;
         box-shadow:0 20px 60px rgba(0,0,0,0.6) !important;
         font-family:'Inter',system-ui,sans-serif !important;
+        padding:24px !important;
+        min-width:340px !important;
       }
-      #noVNC_credentials_dlg > .noVNC_panel_caption { background:transparent !important; color:#f2f2f0 !important; font-family:'Space Grotesk',sans-serif !important; font-weight:600 !important; font-size:18px !important; padding:18px 22px 6px !important; border:0 !important; }
-      #noVNC_credentials_dlg .noVNC_form_label { color:rgba(242,242,240,0.72) !important; font-family:'JetBrains Mono',monospace !important; font-size:10px !important; letter-spacing:0.24em !important; text-transform:uppercase !important; }
-      #noVNC_credentials_dlg input { background:rgba(255,255,255,0.05) !important; border:1px solid rgba(255,255,255,0.18) !important; color:#f2f2f0 !important; border-radius:8px !important; padding:12px 14px !important; font-family:'JetBrains Mono',monospace !important; font-size:14px !important; }
-      #noVNC_credentials_dlg input:focus { border-color:rgba(255,255,255,0.4) !important; outline:none !important; background:rgba(255,255,255,0.08) !important; }
-      #noVNC_credentials_dlg input[type=button], #noVNC_credentials_dlg #noVNC_credentials_button {
-        background:#f2f2f0 !important; color:#0a0a0a !important; border:0 !important; border-radius:8px !important;
-        font-family:'Space Grotesk',sans-serif !important; font-weight:600 !important; font-size:14px !important;
-        padding:12px 22px !important; cursor:pointer !important; letter-spacing:0.04em !important; margin-top:12px !important;
+      #noVNC_credentials_dlg > .noVNC_panel_caption,
+      #noVNC_credentials_dlg .noVNC_panel_caption,
+      #noVNC_credentials_dlg::before {
+        background:transparent !important; color:#f2f2f0 !important;
+        font-family:'Space Grotesk',sans-serif !important; font-weight:700 !important;
+        font-size:20px !important; padding:0 0 14px 0 !important; border:0 !important;
+        letter-spacing:-0.01em !important;
       }
+      #noVNC_credentials_dlg ul { list-style:none !important; padding:0 !important; margin:0 !important; }
+      #noVNC_credentials_dlg ul li { margin:0 0 12px 0 !important; display:flex !important; flex-direction:column !important; gap:6px !important; }
+      #noVNC_credentials_dlg .noVNC_form_label,
+      #noVNC_credentials_dlg label {
+        color:rgba(242,242,240,0.72) !important;
+        font-family:'JetBrains Mono',monospace !important;
+        font-size:10px !important; letter-spacing:0.24em !important; text-transform:uppercase !important;
+        margin:0 !important; display:block !important;
+      }
+      #noVNC_credentials_dlg input {
+        background:rgba(255,255,255,0.05) !important;
+        border:1px solid rgba(255,255,255,0.18) !important;
+        color:#f2f2f0 !important; border-radius:8px !important;
+        padding:12px 14px !important; font-family:'JetBrains Mono',monospace !important;
+        font-size:14px !important; width:100% !important;
+        -webkit-appearance:none !important; appearance:none !important;
+      }
+      #noVNC_credentials_dlg input:focus {
+        border-color:rgba(124,245,182,0.5) !important; outline:none !important;
+        background:rgba(255,255,255,0.08) !important;
+      }
+      #noVNC_credentials_dlg input[type=button],
+      #noVNC_credentials_dlg #noVNC_credentials_button {
+        background:#f2f2f0 !important; color:#0a0a0a !important; border:0 !important;
+        border-radius:8px !important; font-family:'Space Grotesk',sans-serif !important;
+        font-weight:600 !important; font-size:14px !important;
+        padding:13px 22px !important; cursor:pointer !important;
+        letter-spacing:0.04em !important; margin-top:8px !important; width:100% !important;
+      }
+      #noVNC_credentials_dlg input[type=button]:hover { background:#fff !important; }
     `;
     doc.head.appendChild(style);
+    // Override the panel caption text via a label injection if the original is empty.
+    setTimeout(() => {
+      const cap = doc.querySelector('#noVNC_credentials_dlg .noVNC_panel_caption');
+      if(cap && /credentials/i.test(cap.textContent || '')){
+        cap.textContent = 'Sign in to your Mac';
+      }
+    }, 100);
   } catch(err){}
 }
 
@@ -456,7 +579,18 @@ function pollConnection(){
       return;
     }
     if(state === 'disconnected'){
-      if(pollCount > 8) setStatus('Disconnected — refresh to retry', 'err');
+      if(connected){
+        // We had been connected and dropped — show splash again with reconnect option
+        connected = false;
+        splash.classList.remove('hidden');
+        screen_.classList.remove('connected');
+        setStatus('Disconnected', 'err');
+        reconnectBtn.style.display = 'inline-flex';
+        document.title = 'Mac · Disconnected';
+      } else if(pollCount > 8){
+        setStatus('Could not connect', 'err');
+        reconnectBtn.style.display = 'inline-flex';
+      }
       return;
     }
   } else if(credsOpen){
