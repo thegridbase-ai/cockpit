@@ -50,9 +50,9 @@ No account required. Phone pairing works by scanning the QR on screen.
 You need: a Cloudflare account with a domain you control, a Mac running macOS Sonoma or later, and Homebrew.
 
 ```bash
-git clone https://github.com/thegridbase/cockpit.git
+git clone https://github.com/cankilic-gh/cockpit.git
 cd cockpit
-bash scripts/setup-mac.sh
+DOMAIN=mac.your-domain.com bash scripts/setup-mac.sh
 ```
 
 The script installs cloudflared, websockify, and noVNC; creates a Cloudflare Tunnel; and registers both services as launchd agents so they start on boot. After the script finishes, follow the three manual steps it prints: enable macOS Screen Sharing, configure Cloudflare Access, and test.
@@ -105,3 +105,7 @@ All rights reserved. See [LICENSE](LICENSE).
 ## Contributing
 
 Not open for external contributions at this time.
+
+---
+
+A project by [Can Kilic](https://thegridbase.com). Part of [TheGridBase](https://thegridbase.com) — a personal portfolio of small, independent web projects.
