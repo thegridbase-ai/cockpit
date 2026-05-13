@@ -418,31 +418,55 @@ micBtn.addEventListener('click', () => {
 });
 
 let pollCount = 0;
+function isCredsDialogOpen(){
+  try {
+    const doc = vnc.contentDocument;
+    if(!doc) return false;
+    const dlg = doc.getElementById('noVNC_credentials_dlg');
+    if(!dlg) return false;
+    return dlg.classList.contains('noVNC_open') || getComputedStyle(dlg).visibility === 'visible';
+  } catch(_){ return false; }
+}
+function revealIframe(){
+  splash.classList.add('hidden');
+  screen_.classList.add('connected');
+}
 function pollConnection(){
   pollCount++;
   styleIframe();
   const rfb = getRFB();
+  const credsOpen = isCredsDialogOpen();
+
+  // Reveal iframe whenever VNC has progressed past initial load:
+  // connected, authenticating, or credentials dialog visible.
   if(rfb){
     const state = rfb._rfbConnectionState;
     if(state === 'connected'){
-      if(!connected){
-        connected = true;
-        splash.classList.add('hidden');
-        screen_.classList.add('connected');
-        document.title = 'Mac · Connected';
-      }
-    } else if(state === 'disconnected' && pollCount > 8){
-      setStatus('Disconnected — refresh to retry', 'err');
-    } else if(state === 'connecting'){
-      setStatus('Connecting to Mac…', 'connecting');
-    } else if(state === 'securityresult' || state === 'authenticating'){
-      setStatus('Authentication required', 'connecting');
+      if(!connected){ connected = true; revealIframe(); document.title = 'Mac · Connected'; }
+      return;
     }
-  } else if(pollCount > 4){
-    setStatus('Loading noVNC…', 'connecting');
+    if(state === 'connecting' || state === 'securityresult' || state === 'authenticating'){
+      if(credsOpen){
+        // auth UI visible — show iframe so user can type
+        revealIframe();
+        setStatus('Enter your Mac password', 'connecting');
+      } else {
+        setStatus('Connecting to Mac…', 'connecting');
+      }
+      return;
+    }
+    if(state === 'disconnected'){
+      if(pollCount > 8) setStatus('Disconnected — refresh to retry', 'err');
+      return;
+    }
+  } else if(credsOpen){
+    // rfb not yet exposed but dialog is up — reveal iframe anyway
+    revealIframe();
+    return;
   }
+  if(!rfb && pollCount > 4) setStatus('Loading noVNC…', 'connecting');
 }
-setInterval(pollConnection, 600);
+setInterval(pollConnection, 400);
 
 vnc.addEventListener('load', () => {
   styleIframe();
