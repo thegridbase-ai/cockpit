@@ -549,7 +549,7 @@ modalClose.addEventListener('click', () => closePair(true));
 modal.addEventListener('click', (e) => { if(e.target === modal) closePair(true); });
 document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && modal.classList.contains('active')) closePair(true); });
 
-window.__cockpit = { openPair, closePair };
+window.__cockpit = { openPair, closePair, launch, isStreamingUrl, shouldBypassBoost };
 </script>
 </body>
 </html>
