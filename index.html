@@ -246,8 +246,8 @@ main{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column
       <button class="pill" id="pair-btn" type="button" aria-pressed="false" title="Pair phone to push URLs">
         <span class="pill-dot"></span><span>Pair Phone</span>
       </button>
-      <button class="pill" id="boost-btn" type="button" aria-pressed="false" title="Optional auto-fullscreen redirect for YouTube on supported in-car browsers.">
-        <span class="pill-dot"></span><span>Auto-Fullscreen</span>
+      <button class="pill" id="boost-btn" type="button" aria-pressed="false" title="Streaming apps (Netflix, YouTube, Disney+, Max, Apple TV+) already auto-fullscreen. Turn this on to also route any other URL through the same redirect.">
+        <span class="pill-dot"></span><span>Boost All</span>
       </button>
       <button class="pill" id="refresh-btn" type="button" title="Force fresh load — bypass car browser cache">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.36L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.36L3 16"/><path d="M3 21v-5h5"/></svg>
@@ -399,7 +399,9 @@ const footStatus = document.getElementById('foot-status');
 function applyBoost(){
   boostBtn.dataset.on = boost ? '1' : '0';
   boostBtn.setAttribute('aria-pressed', boost ? 'true' : 'false');
-  if(footStatus) footStatus.textContent = boost ? 'Auto-Fullscreen on · Tap “Go to site” on YouTube warning' : 'Phone → Screen';
+  if(footStatus) footStatus.textContent = boost
+    ? 'Boost All on · Tap “Go to site” on YouTube warning'
+    : 'Streaming auto-fullscreens · Tap “Go to site” on warning';
 }
 applyBoost();
 boostBtn.addEventListener('click', (e) => {
@@ -409,12 +411,26 @@ boostBtn.addEventListener('click', (e) => {
   applyBoost();
 });
 
+// URLs that should NEVER go through the YouTube redirect (Mac, Maps, CRD, Google login,
+// or any device-pairing / sign-in code page where a warning interstitial is pointless).
 function shouldBypassBoost(url){
-  return /^https:\/\/([^/]*\.)?(google\.com\/maps|maps\.google\.com|remotedesktop\.google\.com|google\.[a-z.]+\/maps|mac\.thegridbase\.com|accounts\.google\.com)/i.test(url);
+  if(/^https:\/\/([^/]*\.)?(google\.com\/maps|maps\.google\.com|remotedesktop\.google\.com|google\.[a-z.]+\/maps|mac\.thegridbase\.com|accounts\.google\.com)/i.test(url)) return true;
+  // Sign-in / device-code helper paths: /tv8, /tv12, /begin, /activate, /code, /device, /pair
+  if(/^https:\/\/[^/]+\/(tv\d*|begin|activate|code|device|pair|sign-?in)(\/|$|\?)/i.test(url)) return true;
+  return false;
+}
+// Streaming services that need the redirect to trigger theater/fullscreen on Tesla.
+function isStreamingUrl(url){
+  return /^https:\/\/(www\.|play\.)?(netflix\.com|youtube\.com|disneyplus\.com|max\.com|tv\.apple\.com)/i.test(url);
 }
 function launch(url){
   if(!/^https:\/\//.test(url)) return;
-  const useBoost = boost && !shouldBypassBoost(url);
+  if(shouldBypassBoost(url)){
+    window.location.href = url;
+    return;
+  }
+  // Smart auto: streaming always boosted; everything else boosted only if toggle is on.
+  const useBoost = isStreamingUrl(url) || boost;
   const target = useBoost ? 'https://www.youtube.com/redirect?q=' + encodeURIComponent(url) : url;
   window.location.href = target;
 }
