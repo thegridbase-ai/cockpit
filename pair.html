@@ -164,7 +164,7 @@ footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--border);font-
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+import { getDatabase, ref, set, onDisconnect, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
 const FB_CONFIG = {
   apiKey: 'AIzaSyBkvpRhWESyVaTzyUyL4A72vvSClrzMfiY',
@@ -180,7 +180,7 @@ const QUICK = [
   { name:'Disney+',  tag:'Family',  url:'https://www.disneyplus.com/' },
   { name:'Max',      tag:'HBO',     url:'https://www.max.com/' },
   { name:'Apple TV+',tag:'Originals',url:'https://tv.apple.com/' },
-  { name:'Maps',     tag:'My location',geo:true,fallback:'https://maps.google.com/' },
+  { name:'Maps',     tag:'Live · follows you',geo:true,fallback:'https://maps.google.com/' },
   { name:'Remote Desktop', tag:'Mac', url:'https://remotedesktop.google.com/access' }
 ];
 
@@ -237,33 +237,110 @@ if(!params){
     signinGrid.appendChild(btn);
   });
 
+  // Live location: the phone streams fresh GPS to Firebase and the car screen
+  // opens a self-hosted map that follows those updates in real time. This is
+  // why the old flow felt "stuck" — it pushed a single stale pin once; now the
+  // phone keeps sharing and the map keeps moving.
+  let geoWatchId = null;
+  let geoSent = false;
+  let wakeLock = null;
+  let updateCount = 0;
+
+  async function requestWakeLock(){
+    try { if('wakeLock' in navigator){ wakeLock = await navigator.wakeLock.request('screen'); } } catch(_){}
+  }
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible' && geoWatchId != null && !wakeLock) requestWakeLock();
+  });
+
+  function stopGeo(){
+    if(geoWatchId != null){ navigator.geolocation.clearWatch(geoWatchId); geoWatchId = null; }
+    if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
+    remove(ref(fbDb, 'cockpit-geo/' + params.id)).catch(()=>{});
+  }
+  window.addEventListener('pagehide', stopGeo);
+
   function sendGeo(q){
     if(!('geolocation' in navigator)){
       return sendUrl(q.fallback);
     }
-    const tag = stateEl.classList.contains('active') ? null : null;
-    showState('ok','Getting location…','Waiting for your phone to share GPS.');
+    if(geoWatchId != null){
+      // Already sharing — just re-open the map on the car screen.
+      sendUrl(`https://${location.host}/map#${params.id}`);
+      return;
+    }
     document.querySelector('.state-icon').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const lat = latitude.toFixed(6);
-        const lng = longitude.toFixed(6);
-        const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-        stateEl.classList.remove('active');
-        sendUrl(url);
-      },
-      (err) => {
-        stateEl.classList.remove('active');
-        if(err && err.code === 1){
-          showState('err','Location blocked','Allow location for this site in your phone settings, or tap Maps again to retry.');
-        } else {
-          showState('err','Location unavailable','Sending generic Maps instead.');
-          setTimeout(() => sendUrl(q.fallback), 800);
+    showState('ok','Getting a GPS fix…','Hold on — waiting for an accurate location.');
+    requestWakeLock();
+
+    const geoRef = ref(fbDb, 'cockpit-geo/' + params.id);
+    onDisconnect(geoRef).remove().catch(()=>{});
+
+    geoWatchId = navigator.geolocation.watchPosition(
+      async (pos) => {
+        const c = pos.coords;
+        const payload = {
+          lat: c.latitude, lng: c.longitude,
+          acc: c.accuracy != null ? Math.round(c.accuracy) : null,
+          spd: (c.speed != null && !Number.isNaN(c.speed)) ? c.speed : null,
+          hdg: (c.heading != null && !Number.isNaN(c.heading)) ? Math.round(c.heading) : null,
+          ts: Date.now()
+        };
+        try { await set(geoRef, payload); } catch(_){}
+        updateCount++;
+
+        // Tell the car to open the live map once we have a usable first fix
+        // (good accuracy, or after a couple of readings so we don't stall).
+        if(!geoSent && (c.accuracy == null || c.accuracy <= 60 || updateCount >= 3)){
+          geoSent = true;
+          sendUrl(`https://${location.host}/map#${params.id}`);
+          showLiveState();
+        } else if(geoSent){
+          updateLiveState(payload);
         }
       },
-      { enableHighAccuracy:true, timeout:8000, maximumAge:60000 }
+      (err) => {
+        if(!geoSent){
+          stopGeo();
+          if(err && err.code === 1){
+            showState('err','Location blocked','Allow location for this site in your phone settings, then tap Maps again.');
+          } else {
+            showState('err','Location unavailable','Sending generic Maps instead.');
+            setTimeout(() => sendUrl(q.fallback), 800);
+          }
+        }
+      },
+      { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
     );
+  }
+
+  function showLiveState(){
+    stateEl.classList.add('active');
+    stateEl.dataset.kind = 'ok';
+    document.getElementById('state-icon').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>';
+    document.getElementById('state-title').textContent = 'Sharing live location';
+    document.getElementById('state-desc').innerHTML =
+      'The car map is following you now. <b>Keep this page open and your phone unlocked.</b><br><span id="live-meta" style="opacity:.7"></span>';
+    if(!document.getElementById('stop-geo')){
+      const btn = document.createElement('button');
+      btn.id = 'stop-geo'; btn.type = 'button';
+      btn.textContent = 'Stop sharing';
+      btn.style.cssText = 'margin-top:14px;width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.16);background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer';
+      btn.addEventListener('click', () => {
+        stopGeo();
+        showState('ok','Stopped','Location sharing ended. Tap Maps to start again.');
+      });
+      document.getElementById('state').appendChild(btn);
+    }
+    stateEl.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  function updateLiveState(p){
+    const meta = document.getElementById('live-meta');
+    if(meta){
+      const acc = p.acc != null ? `±${p.acc} m` : '';
+      const spd = p.spd != null ? ` · ${Math.round(p.spd*3.6)} km/h` : '';
+      meta.textContent = `${updateCount} updates sent · ${acc}${spd}`;
+    }
   }
 
   document.getElementById('form').addEventListener('submit', (e) => {

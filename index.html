@@ -417,6 +417,8 @@ boostBtn.addEventListener('click', (e) => {
 // or any device-pairing / sign-in code page where a warning interstitial is pointless).
 function shouldBypassBoost(url){
   if(/^https:\/\/([^/]*\.)?(google\.com\/maps|maps\.google\.com|remotedesktop\.google\.com|google\.[a-z.]+\/maps|mac\.thegridbase\.com|accounts\.google\.com)/i.test(url)) return true;
+  // Our own self-hosted live map — open it directly, no interstitial.
+  if(/^https:\/\/([^/]*\.)?thegridbase\.com\/(map|live)(#|\?|$|\/)/i.test(url)) return true;
   // Sign-in / device-code helper paths: /tv8, /tv12, /begin, /activate, /code, /device, /pair
   if(/^https:\/\/[^/]+\/(tv\d*|begin|activate|code|device|pair|sign-?in)(\/|$|\?)/i.test(url)) return true;
   return false;
